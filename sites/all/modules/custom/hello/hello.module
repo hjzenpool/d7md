@@ -5,3 +5,49 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
+
+function hello_block_info() {
+  $blocks = array();
+  
+  $blocks['hello_world'] = array(
+    'info' => t('Hello World Block'),
+    );
+  
+    $blocks['hello_user'] = array(
+    'info' => t('Hello User Block'),
+    );
+  
+  return $blocks;
+}
+
+function hello_block_view($delta = '') {
+  $block = array();
+  
+  switch ($delta) {
+    case 'hello_world':
+      $block['subject'] = t('Hello World!!!');
+      $block['content'] = t('This is the Hello World block.');
+      break;
+    
+    case 'hello_user':
+      $block['subject'] = t('Hello User!!!');
+
+      $hour = date('G');
+      $greeting = '';
+      if ($hour < 12) {
+        $greeting = 'Good morning @name!';
+      }
+      elseif ($hour < 18) {
+        $greeting = 'Good afternoon @name!';
+      }
+      else {
+        $greeting = 'Good evening @name!';
+      }
+
+      $block['content'] = t($greeting, array('@name' => $GLOBALS['user']->name));
+   
+      break;
+  }
+  
+  return $block;
+}
