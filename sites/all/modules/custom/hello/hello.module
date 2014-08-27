@@ -63,8 +63,11 @@ function hello_block_view($delta = '') {
     if (arg(0) == 'user' && is_numeric(arg(1))) {
         $account = user_load(arg(1));
         if (!empty($account)) {
-          /* dpm($account); */
-          
+          if (module_exists('devel')) {
+            /* test for module enabled before printing debug info */
+            dpm($account); 
+          }
+                    
           $output = '';
           $output .= '<div><label>' . t('Name') . '</label>' . $account->name . '</div>';
           $output .= '<div><label>' . t('Email') . '</label>' . $account->mail . '</div>';
