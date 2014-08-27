@@ -68,8 +68,9 @@ function hello_block_view($delta = '') {
           $output = '';
           $output .= '<div><label>' . t('Name') . '</label>' . $account->name . '</div>';
           $output .= '<div><label>' . t('Email') . '</label>' . $account->mail . '</div>';
-          $output .= '<div><label>' . t('Created') . '</label>' . $account->created . '</div>';
-          $output .= '<div><label>' . t('Accessed') . '</label>' . format_date($account->access) . '</div>';
+          $output .= '<div><label>' . t('Created') . '</label>' . format_date($account->created) . '</div>';
+          $access = ($account->access == 0) ? t('Never') : format_date($account->access);
+          $output .= '<div><label>' . t('Accessed') . '</label>' . $access . '</div>';
           
           $block['subject'] = t('User Info!!!');
           $block['content'] = $output;
