@@ -12,31 +12,49 @@ function hello_menu_menu() {
   /* localhost:8080/drupal/hello */
   /* 'hello' is the key in the drupal path */
   $items['hello'] = array(
-    'title' => 'Hello World',
+    'title' => 'Hello World',  /* note: not translated */
     'page callback' => 'hello_menu_simple_hello',  /* function to call */
-    'access arguments' => array('access content'),  
-    /* drupal permission required for this page, 
-     * corresponds to 'View Published Content' */
-
-    /* gets added by default to navigation menu */
-    /* unless we set menu_name */
-    'menu_name' => 'main-menu',
+    'access arguments' => array('access content'), /* corresponds to 'View Published Content' */
+    'menu_name' => 'main-menu', /* by default, gets added by default to navigation menu */
     'weight' => 1,  /* otherwise, by default, this puts it left of Home in Main menu */
-    /* 'type' => MENU_SUGGESTED_ITEM, */
+
   );
   
-  /*
-  $items['example/feed'] = array(
-    'title' => 'Example RSS feed',
-    'page callback' => 'example_feed',
+  $items['variables'] = array(
+    'title' => 'Hello Variables',
+    'page callback' => 'hello_menu_list_variables',
     'access arguments' => array('access content'),
-    'type' => MENU_CALLBACK,
+    'menu_name' => 'main-menu', /* by default, gets added by default to navigation menu */
+    'weight' => 2,  /* otherwise, by default, this puts it left of Home in Main menu */
+   
   );
-*/
+  
   return $items;
 }
 
+/* NOTE: start your function names with your module name */
 /* this must return a string */
+
+/* just print hello */
 function hello_menu_simple_hello() {
   return t('Hello world!!!');
+}
+
+/* list the variables */
+function hello_menu_list_variables() {
+  $variables = variable_initialize(); /* get all variables into array */
+  $names = array_keys ($variables);
+  $output = '<ul>'; /* start unordered list in HTML */
+  
+  /* dpm ($variables); */  /* this makes it appear at top */  
+  /* return t('TESTING!!'); */ /* just returns the string */
+  /* return(kpr ($variables, TRUE));  */ /* this makes it appear in main section */
+  /* return(kpr ($names, TRUE)); * /* returns just variable names */
+  
+  foreach ($names as $name) {
+    $output .= '<li>' . $name . '</li>';
+  }
+  $output .= "</ul>"; /* close unordered list */
+  return ($output);
+
 }
