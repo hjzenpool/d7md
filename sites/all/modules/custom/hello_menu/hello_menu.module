@@ -1,0 +1,42 @@
+<?php
+
+/* 
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+/* replacement for hook_menu */
+function hello_menu_menu() {
+
+  /* localhost:8080/drupal/hello */
+  /* 'hello' is the key in the drupal path */
+  $items['hello'] = array(
+    'title' => 'Hello World',
+    'page callback' => 'hello_menu_simple_hello',  /* function to call */
+    'access arguments' => array('access content'),  
+    /* drupal permission required for this page, 
+     * corresponds to 'View Published Content' */
+
+    /* gets added by default to navigation menu */
+    /* unless we set menu_name */
+    'menu_name' => 'main-menu',
+    'weight' => 1,  /* otherwise, by default, this puts it left of Home in Main menu */
+    /* 'type' => MENU_SUGGESTED_ITEM, */
+  );
+  
+  /*
+  $items['example/feed'] = array(
+    'title' => 'Example RSS feed',
+    'page callback' => 'example_feed',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+  );
+*/
+  return $items;
+}
+
+/* this must return a string */
+function hello_menu_simple_hello() {
+  return t('Hello world!!!');
+}
