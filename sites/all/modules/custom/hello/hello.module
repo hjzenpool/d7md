@@ -65,7 +65,7 @@ function hello_block_view($delta = '') {
         if (!empty($account)) {
           if (module_exists('devel')) {
             /* test for module enabled before printing debug info */
-            dpm($account); 
+            /* dpm($account); */ 
           }
                     
           $output = '';
