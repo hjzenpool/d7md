@@ -17,7 +17,7 @@ function hello_menu_menu() {
     'access arguments' => array('access content'), /* corresponds to 'View Published Content' */
     'menu_name' => 'main-menu', /* by default, gets added by default to navigation menu */
     'weight' => 1,  /* otherwise, by default, this puts it left of Home in Main menu */
-   );
+  );
   
   $items['variables'] = array(
     'title' => 'Hello Variables',
@@ -25,17 +25,35 @@ function hello_menu_menu() {
     'access arguments' => array('access content'),
    # 'menu_name' => 'main-menu', /* by default, gets added by default to navigation menu */
     'menu_name' => 'navigation', /* put it back into navigation instead of main-menu */
-    'weight' => 2,  /* otherwise, by default, this puts it left of Home in Main menu */
-    );
+   # 'weight' => 2,  /* otherwise, by default, this puts it left of Home in Main menu */
+  );
   
-  /* submenu under variables */
+  /* submenu under variables, specific for site_name */
+  /*
   $items['variables/site_name'] = array(
     'title' => 'Hello Variables: Site Name',
     'page callback' => 'hello_menu_show_variables',
     'access arguments' => array('access content'),
-    'menu_name' => 'main-menu', /* by default, gets added by default to navigation menu */
-    'weight' => 3,  /* otherwise, by default, this puts it left of Home in Main menu */
-    );
+    'menu_name' => 'main-menu',
+    'weight' => 3,
+  );
+  */
+
+  /* use % for dynamic page name */
+  /* array for title and page arguments is:
+   * 0: variables
+   * 1: wildcard value from the %
+   */
+  $items['variables/%'] = array(
+    'title callback' => 'hello_menu_show_variable_title',
+    'title arguments' => array(1),  /* sends parameter to the title callback */
+    'page callback' => 'hello_menu_show_variable',
+    'page arguments' => array(1), /* sends parameter to page callback */
+    'access arguments' => array('access content'),
+   # 'menu_name' => 'main-menu', /* by default, gets added by default to navigation menu */
+    'menu_name' => 'navigation',
+   # 'weight' => 3,  /* otherwise, by default, this puts it left of Home in Main menu */
+  );
   
   return $items;
 }
@@ -64,11 +82,21 @@ function hello_menu_list_variables() {
   }
   $output .= "</ul>"; /* close unordered list */
   return ($output);
-
 }
 
+/* works with specific variable: site_name */
 function hello_menu_show_variables() {
   $value = variable_get('site_name', t('No value for this variable'));
-  
-    return ($value);
+  return ($value);
+}
+
+/* get variable name as a parameter */
+function hello_menu_show_variable($variable_name) {
+  $value = variable_get($variable_name, t('No value for this variable'));
+  return ($value);
+}
+
+/* callback for title with parameter */
+function hello_menu_show_variable_title($variable_name) {
+  return t('Show Variable: @name', array('@name' => $variable_name));
 }
