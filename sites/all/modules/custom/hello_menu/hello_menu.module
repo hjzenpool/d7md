@@ -17,17 +17,25 @@ function hello_menu_menu() {
     'access arguments' => array('access content'), /* corresponds to 'View Published Content' */
     'menu_name' => 'main-menu', /* by default, gets added by default to navigation menu */
     'weight' => 1,  /* otherwise, by default, this puts it left of Home in Main menu */
-
-  );
+   );
   
   $items['variables'] = array(
     'title' => 'Hello Variables',
     'page callback' => 'hello_menu_list_variables',
     'access arguments' => array('access content'),
-    'menu_name' => 'main-menu', /* by default, gets added by default to navigation menu */
+   # 'menu_name' => 'main-menu', /* by default, gets added by default to navigation menu */
+    'menu_name' => 'navigation', /* put it back into navigation instead of main-menu */
     'weight' => 2,  /* otherwise, by default, this puts it left of Home in Main menu */
-   
-  );
+    );
+  
+  /* submenu under variables */
+  $items['variables/site_name'] = array(
+    'title' => 'Hello Variables: Site Name',
+    'page callback' => 'hello_menu_show_variables',
+    'access arguments' => array('access content'),
+    'menu_name' => 'main-menu', /* by default, gets added by default to navigation menu */
+    'weight' => 3,  /* otherwise, by default, this puts it left of Home in Main menu */
+    );
   
   return $items;
 }
@@ -57,4 +65,10 @@ function hello_menu_list_variables() {
   $output .= "</ul>"; /* close unordered list */
   return ($output);
 
+}
+
+function hello_menu_show_variables() {
+  $value = variable_get('site_name', t('No value for this variable'));
+  
+    return ($value);
 }
