@@ -78,8 +78,20 @@ function hello_menu_list_variables() {
   /* return(kpr ($names, TRUE)); * /* returns just variable names */
   
   foreach ($names as $name) {
-    $output .= '<li>' . $name . '</li>';
-  }
+    /* $output .= '<li>' . $name . '</li>'; */ /* this just lists the names */
+    
+    /* $output .= '<li><a href="variables/' . $name . '">' . $name . '</a></li>'; */  /* this makes the names clickable */
+    
+    /* $output .= '<li>' . l($name, 'variables/' . $name) . '</li>'; */ /* better way using l- function */
+    
+    /* $output .= '<li>' . l($name, 'variables/' . $name,
+      array('attributes' => array('class' => array('test-link', 'other-link')))) . '</li>'; */ /* option to specify CSS class */
+
+    $output .= '<li>' . l($name, 'variables/' . $name,
+      array('attributes' => array('target' => '_blank'))) . '</li>'; /* option for new tab or window */
+    
+
+    }
   $output .= "</ul>"; /* close unordered list */
   return ($output);
 }
@@ -100,3 +112,5 @@ function hello_menu_show_variable($variable_name) {
 function hello_menu_show_variable_title($variable_name) {
   return t('Show Variable: @name', array('@name' => $variable_name));
 }
+
+/* NOTE: I got WSOD for http://localhost:8080/drupal/variables/cron_last and some others */
