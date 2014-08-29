@@ -17,44 +17,72 @@ function hello_menu_menu() {
     'access arguments' => array('access content'), /* corresponds to 'View Published Content' */
     'menu_name' => 'main-menu', /* by default, gets added by default to navigation menu */
     'weight' => 1,  /* otherwise, by default, this puts it left of Home in Main menu */
-  );
-  
+    );
+
+  /* this creates menu item in navigation
   $items['variables'] = array(
     'title' => 'Hello Variables',
     'page callback' => 'hello_menu_list_variables',
     'access arguments' => array('access content'),
-   # 'menu_name' => 'main-menu', /* by default, gets added by default to navigation menu */
-    'menu_name' => 'navigation', /* put it back into navigation instead of main-menu */
-   # 'weight' => 2,  /* otherwise, by default, this puts it left of Home in Main menu */
-  );
-  
-  /* submenu under variables, specific for site_name */
-  /*
-  $items['variables/site_name'] = array(
-    'title' => 'Hello Variables: Site Name',
-    'page callback' => 'hello_menu_show_variables',
+    'menu_name' => 'navigation',     
+    );
+    */
+   
+  /* placeholder for tab 
+   * default local task inherits everything else from logical parent hello
+   */
+  $items['hello/simple'] = array(
+    'title' => 'Simple',  
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => -1, /* force it to be left-most */
+    );
+    
+  /* this creates hello/variables/ */
+  $items['hello/variables'] = array(
+    'title' => 'Hello Variables',
+    'page callback' => 'hello_menu_list_variables',
     'access arguments' => array('access content'),
-    'menu_name' => 'main-menu',
-    'weight' => 3,
-  );
-  */
+    /* 'menu_name' => 'navigation',     /* not needed for a subtab */
+    'type' => MENU_LOCAL_TASK,
+    );
 
-  /* use % for dynamic page name */
-  /* array for title and page arguments is:
+  /* this uses % for dynamic page name 
+   * everything is at top-level variables/
+   * array for title and page arguments is:
    * 0: variables
    * 1: wildcard value from the %
+   * arrau(1) sends second URL value to callbacks
    */
+  /*
   $items['variables/%'] = array(
     'title callback' => 'hello_menu_show_variable_title',
-    'title arguments' => array(1),  /* sends parameter to the title callback */
+    'title arguments' => array(1),
     'page callback' => 'hello_menu_show_variable',
-    'page arguments' => array(1), /* sends parameter to page callback */
+    'page arguments' => array(1), 
     'access arguments' => array('access content'),
-   # 'menu_name' => 'main-menu', /* by default, gets added by default to navigation menu */
     'menu_name' => 'navigation',
-   # 'weight' => 3,  /* otherwise, by default, this puts it left of Home in Main menu */
+  );
+   */
+  
+  /* this creates hierarchy hello/variables/% 
+   * note that now need to pass array(2) to the callbacks
+   */
+  $items['hello/variables/%'] = array(
+    'title callback' => 'hello_menu_show_variable_title',
+    'title arguments' => array(2),
+    'page callback' => 'hello_menu_show_variable',
+    'page arguments' => array(2), 
+    'access arguments' => array('access content'),
+    'menu_name' => 'navigation',
   );
   
+  /* action link to create a new variable, displays wtih + symbol */
+  $items['hello/variables/create'] = array(
+    'title' => 'Create Variable',
+    'page callback' => 'hello_menu_create_variable',
+    'access arguments' => array('access content'), /* note, not good security */
+    'type' => MENU_LOCAL_ACTION,
+  );
   return $items;
 }
 
@@ -87,10 +115,9 @@ function hello_menu_list_variables() {
     /* $output .= '<li>' . l($name, 'variables/' . $name,
       array('attributes' => array('class' => array('test-link', 'other-link')))) . '</li>'; */ /* option to specify CSS class */
 
-    $output .= '<li>' . l($name, 'variables/' . $name,
+    $output .= '<li>' . l($name, 'hello/variables/' . $name,
       array('attributes' => array('target' => '_blank'))) . '</li>'; /* option for new tab or window */
-    
-
+ 
     }
   $output .= "</ul>"; /* close unordered list */
   return ($output);
@@ -111,6 +138,11 @@ function hello_menu_show_variable($variable_name) {
 /* callback for title with parameter */
 function hello_menu_show_variable_title($variable_name) {
   return t('Show Variable: @name', array('@name' => $variable_name));
+}
+
+/* page callback for create variable */
+function hello_menu_create_variable() {
+  return t('This is how we create a variable');
 }
 
 /* NOTE: I got WSOD for http://localhost:8080/drupal/variables/cron_last and some others */
