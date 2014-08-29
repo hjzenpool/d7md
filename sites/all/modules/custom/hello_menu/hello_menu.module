@@ -6,6 +6,8 @@
  * and open the template in the editor.
  */
 
+/* can make 2 levels of nested menus */
+
 /* replacement for hook_menu */
 function hello_menu_menu() {
 
@@ -13,6 +15,7 @@ function hello_menu_menu() {
   /* 'hello' is the key in the drupal path */
   $items['hello'] = array(
     'title' => 'Hello World',  /* note: not translated */
+    'description' => 'this is the description displayed upon hover-over',
     'page callback' => 'hello_menu_simple_hello',  /* function to call */
     'access arguments' => array('access content'), /* corresponds to 'View Published Content' */
     'menu_name' => 'main-menu', /* by default, gets added by default to navigation menu */
@@ -64,6 +67,29 @@ function hello_menu_menu() {
   );
    */
   
+  /* placeholder to contain the create and the list */
+    $items['hello/variables/list'] = array(
+    'title' => 'List',  
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    );
+    
+      /* action link to create a new variable, displays wtih + symbol */
+  $items['hello/variables/create'] = array(
+    'title' => 'Create Variable',
+    'page callback' => 'hello_menu_create_variable',
+    'access arguments' => array('access content'), /* note, not good security */
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 1,
+  );
+  
+  $items['hello/variables/delete'] = array(
+    'title' => 'Delete Variable',
+    'page callback' => 'hello_menu_delete_variable',
+    'access arguments' => array('access content'), /* note, not good security */
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 2,
+  );
+  
   /* this creates hierarchy hello/variables/% 
    * note that now need to pass array(2) to the callbacks
    */
@@ -74,15 +100,10 @@ function hello_menu_menu() {
     'page arguments' => array(2), 
     'access arguments' => array('access content'),
     'menu_name' => 'navigation',
+     'type' => MENU_CALLBACK, /* not needed for wildcard, but this is the type */
   );
   
-  /* action link to create a new variable, displays wtih + symbol */
-  $items['hello/variables/create'] = array(
-    'title' => 'Create Variable',
-    'page callback' => 'hello_menu_create_variable',
-    'access arguments' => array('access content'), /* note, not good security */
-    'type' => MENU_LOCAL_ACTION,
-  );
+
   return $items;
 }
 
@@ -143,6 +164,11 @@ function hello_menu_show_variable_title($variable_name) {
 /* page callback for create variable */
 function hello_menu_create_variable() {
   return t('This is how we create a variable');
+}
+
+/* page callback for delete variable */
+function hello_menu_delete_variable() {
+  return t('This is how we delete a variable');
 }
 
 /* NOTE: I got WSOD for http://localhost:8080/drupal/variables/cron_last and some others */
