@@ -1,0 +1,5 @@
+name = Node Metadata
+core = 7.x
+description = Node metadata examples for DrupalTutor Module Development class.
+package = DrupalTutor
+version = 7.x-0.1

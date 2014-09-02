@@ -1,0 +1,45 @@
+<?php
+
+/* 
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+/* can make 2 levels of nested menus */
+
+/* replacement for hook_menu */
+function node_metadata_menu() {
+  $items = array();
+
+  /* want a tab under any menu */
+  
+  /* localhost:8080/drupal/x/metadata */
+  /* make a tab */
+  /* NOTE: if use %, then just node id is passed.
+   * if use %node, it is a Named-Wildcard, and passed as node object
+   */
+  $items['node/%node/metadata'] = array(
+    'title' => 'Metadata',  /* note: not translated */
+    'description' => 'this is the description displayed upon hover-over',
+    'page callback' => 'node_metadata_page',  /* function to call */
+    'page arguments' => array(1),
+    'access arguments' => array('access content'), /* corresponds to 'View Published Content' */
+    'file' => 'node_metadata.pages.inc',  /* pass name of file loaded when access this URL  */
+    'file path' => drupal_get_path('module', 'node_metadata') . '/includes',
+    'type' => MENU_LOCAL_TASK, /* makes this a tab */
+    );
+
+  return $items;
+}
+
+/* create custome permission-level, which can then be configured who can use it */
+/* keys are machine-name permissions, second array are human-readable names */
+function node_metadata_permission() {
+  return array(
+    'view node metadata' => array(
+      'title' => t('View metadata about nodes'),
+      'description' => t('See important details about nodes.'),
+    ),
+  );
+}
