@@ -1,0 +1,74 @@
+<?php
+
+/* 
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+/* provide our own tab for Updates locked, implement hook_menu */
+function node_limit_menu() {
+  $items = array();
+  
+  $items['node/%node/edit-locked'] = array(
+    'title' => 'Updates locked',
+    'page callback' => 'node_limit_locked_page',
+    'access callback' => 'node_limit_node_locked_access',
+    'access arguments' => array(1), /* pass the node object */
+    'type' => MENU_LOCAL_TASK,
+    'weight' => -1,
+  );
+
+  return $items;
+}
+
+function node_limit_locked_page() {
+  return t('This node is locked');
+}
+
+/* replacement for hook_menu_alter */
+/* passes items by reference, so we actually update it */
+ /* change title of tab from Edit to Update */
+/* set weight, otherwise it will appear after Metadata  */
+function node_limit_menu_alter(&$items) {
+  /* $items['node/%node/edit']['title'] = 'Update'; */ /* this is a static title */
+  $items['node/%node/edit']['title callback'] = 'node_limit_node_edit_title';
+  $items['node/%node/edit']['title arguments'] = array(1);
+  $items['node/%node/edit']['weight'] = -1;
+  $items['node/%node/edit']['access callback'] = 'node_limit_node_access_callback'; /* default is 'node_access' */
+  $items['node/%node/edit']['access arguments'] = array(1); /* default is 'update'. pass the node argument */
+  
+}
+
+/* override node_access */
+/* only use default node_access if you are inside 15 minutes */
+/* node access returns TRUE or FALSE */
+/* NOTE, don't use function name node_limit_node_access or it implements another hook */
+function node_limit_node_access_callback($node) {
+  if ($node->changed > (REQUEST_TIME - 15 * 60)) {
+    /* if changed time is greater (past) than 15 minutes ago */
+    /* it is within 15 minute window */
+      return node_access('update', $node);
+    }
+    return FALSE;
+}
+
+/* modify the title to be Update and number of remaining minutes */
+function node_limit_node_edit_title($node) {
+  $time_diff = REQUEST_TIME - $node->changed;
+  $time_left = ceil(((15 * 60) - $time_diff) / 60); /* number of minutes remaining (reounded up) */
+  return t('Update (@time minutes left)', array('@time' => $time_left));
+}
+
+/* near opposite of node_limit_node_access */
+/* this is for the Updates locked tab, which should be displayed only 
+ * when the other one is not.
+ */
+function node_limit_node_locked_access($node) {
+  if ($node->changed > (REQUEST_TIME - 15 * 60)) {
+    /* if changed time is greater (past) than 15 minutes ago */
+    /* it is within 15 minute window */
+      return FALSE;
+    }
+  return node_access('update', $node);
+}

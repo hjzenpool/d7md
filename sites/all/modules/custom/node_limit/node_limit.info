@@ -1,0 +1,5 @@
+name = Node Limit
+core = 7.x
+description = Limit node edits to 15 minutes after last edit.
+package = DrupalTutor
+version = 7.x-0.1
