@@ -1,0 +1,85 @@
+<?php
+
+/* 
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+function hamster_menu() {
+  $items = array();
+  
+  $items['hamster'] = array(
+    'title' => 'Hamsters',
+    'page callback' => 'hamster_list',
+    'access arguments' => array('view hamster'),
+  );
+  
+  return $items;
+}
+
+/* query the database */
+/* NOTE: db_query requires {} around table names as coding standard
+ * in order to allow for use of table prefixes (which is not widely used anymore)
+ */
+function hamster_list() {
+  $output = ' ';
+  
+  /* use AS habitat otherwise both tables have column name */
+  $results = db_query_range("SELECT h.*, hh.name AS habitat_name
+                       FROM {hamster} h
+                       LEFT JOIN {hamster_habitat} hh ON hh.id=h.habitat_id",
+    0, /* starting value */
+    10 /* number of results to show each time */
+    );
+
+  $rows = array();
+  
+  /* record is an object with properties of the db column names */
+  foreach ($results as $record) {
+    
+    /* can use this just to print the data, nothing fancy */
+    /* $output .= $record->id . ' | ' . $record->name . ' | ' . $record->gender . '<br />'; */
+
+    $row = array(
+      $record->id,
+      $record->name,
+      $record->gender,
+      t('@weight g', array('@weight' => $record->weight)), /* use translate with a label */
+      format_date($record->birthdate, 'custom', 'Y-m-d'),  /* see PHP date. we removed hours/min/sec */
+      theme('image_style', array(
+        'style_name' => 'thumbnail',
+        'path' => file_build_uri($record->image))), /* image contains relative path */
+      $record->habitat_name,
+    );
+    $rows[] = $row;
+  }
+  
+  $header = array(
+    t('ID'),
+    t('Name'),
+    t('Gender'),
+    t('Weight'),
+    t('Birth Date'),
+    t('Image'),
+    t('Habitat'),
+  );
+  
+  $variables = array(
+    'rows' => $rows,
+    'header' => $header,
+  );
+  
+  /* uses theme_table to display in a formatted table */
+  $output .= theme('table', $variables);
+  return ($output);
+}
+
+function hamster_permission() {
+  return array(
+    'view hamster' => array(
+      'title' => t('View Hamsters'),
+      'description' => t('View information about hamsters in the database.'),
+    )
+  );
+}
