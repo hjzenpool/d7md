@@ -15,8 +15,157 @@ function hamster_menu() {
     'access arguments' => array('view hamster'),
   );
   
+  /* create a menu path */
+  $items['hamster/%hamster'] = array(
+    'title callback' => 'hamster_page_title',  /* dynamically set title based on name */
+    'title arguments' => array(1), /* pass hamster id to title callback */
+    'page callback' => 'hamster_page',
+    'page arguments' => array(1),
+    'access arguments' => array('view hamster'), /* permission */
+  );
+    
+  /* insert */
+  $items['hamster/insert'] = array(
+    'title' => 'DB Insert',
+    'page callback' => 'hamster_insert',
+    'access arguments' => array('edit hamsters'), /* permission */
+  );
+    
+  /* update */
+  $items['hamster/update'] = array(
+    'title' => 'DB update',
+    'page callback' => 'hamster_update',
+    'access arguments' => array('edit hamsters'), /* permission */
+  );
+    
+  /* delete */
+  $items['hamster/delete'] = array(
+    'title' => 'DB delete',
+    'page callback' => 'hamster_delete',
+    'access arguments' => array('edit hamsters'), /* permission */
+  );
+  
   return $items;
 }
+
+/* example with SQL that does an insert
+ * page callback for insert
+ * second param is keyed array with the values
+ *  * use ':' in front of variables
+ */
+function hamster_insert() {
+  db_query("INSERT INTO {hamster} (name, gender, weight, birthdate, image, habitat_id)
+            VALUES (:name, :gender, :weight, :birth, :image, :habitat)",
+    array(
+      ':name' => 'Test',
+      ':gender' => 'male',
+      ':weight' => 150,
+      ':birth' => REQUEST_TIME,
+      ':image' => '',
+      ':habitat' => 3,
+    )
+  );
+  return t('Inserted');
+}
+
+/* example of update callback */
+function hamster_update() {
+  db_query("UPDATE {hamster} SET habitat_id = :habitat WHERE name = :name",
+    array(
+      ':name' => 'Test',
+      ':habitat' => 1,
+    )
+  );
+  return t('Updated');
+}
+
+/* example of delete callback */
+function hamster_delete() {
+  db_query("DELETE FROM {hamster} WHERE name = :name",
+    array(
+      ':name' => 'Test',
+    )
+  );
+  return t('Deleted');
+}
+
+/* declare our theme function */
+/* create hamster theme, which will allow a Themer to override our HTML */
+/* return an array with all the theme functions declared by the module */
+function hamster_theme($existing, $type, $theme, $path) {
+  
+  /* return array of function names and the variables */
+  return array(
+    'hamster_info' => array(
+      'variables' => array('hamster' => NULL),
+    ),
+  );
+}
+
+/* implement our theme function
+ * required by declaration of hamster_theme
+ * allow reuse, and override. themer can replace this function 
+ */
+function theme_hamster_info($variables) {
+  $hamster = $variables['hamster'];
+  
+   /* add custom CSS */
+  drupal_add_css(drupal_get_path('module', 'hamster') . '/hamster.css');
+
+  $output = '<div class="hamster-page">';
+  
+  if (!empty($hamster->image)) {
+    $output .= '<div>' . theme('image_style', array('path' => file_build_uri($hamster->image),
+      'style_name' => 'large')) . '</div>';
+  }
+  $output .= '<div><label class="inline">' . t('ID') . ':</label>' . $hamster->id . '</div>';
+  $output .= '<div><label class="inline">' . t('Gender') . ':</label>' . $hamster->gender . '</div>';
+  $output .= '<div><label class="inline">' . t('Weight') . ':</label>' . t('@weight g', array('@weight' => $hamster->weight)) . '</div>';
+  $output .= '<div><label class="inline">' . t('Birth Date') . ':</label>' . format_date($hamster->birthdate, 'custom', 'Y-m-d') . '</div>';
+  
+  /* format_interval converts seconds to #year, #mo, #day. (2 means return 2 pieces */
+  $age = REQUEST_TIME - $hamster->birthdate;
+  $output .= '<div><label class="inline">' . t('Age') . ':</label>' . format_interval($age, 2) . '</div>';
+  $output .= '<div><label class="inline">' . t('Habitat') . ':</label>' . $hamster->habitat_name . '</div>';
+ 
+  $output .= '</div>';
+  return $output;
+  
+}
+
+/* page callback 
+ * takes an object
+ * wrap in div class=hamster-page, allows use of custom CSS
+ * allows reuse of code
+ * allows themer to rewrite theme_hamster_info
+ */
+function hamster_page($hamster) {
+ return theme('hamster_info', array('hamster' => $hamster));
+}
+
+/* title callback, expects an object, just print the name for that object */
+/* NOTE: no need to re-query since load function retrieved everything */
+function hamster_page_title($hamster) {
+  return $hamster->name;
+}
+
+/* needed for named wildcard hamster */
+/* takes hamster id, returns hamster object */
+function hamster_load($id) {
+  
+  /* note: $id takes whatever value comes as the URL */
+  /* it is huge security leak to allow any SQL code to be passed in as id
+   * Instead, use 'named' paramters with ':' to sanitize the query
+   * fetchObject() returns first row as an object
+   */
+  $result = db_query("SELECT h.*, hh.name AS habitat_name
+                      FROM {hamster} h
+                      LEFT JOIN {hamster_habitat} hh ON hh.id=h.habitat_id
+                      WHERE h.id = :hamster_id", array(':hamster_id' => $id))->fetchObject();
+  /* return the hamster object, or FALSE */
+  return $result;
+} 
+
 
 /* query the database */
 /* NOTE: db_query requires {} around table names as coding standard
@@ -25,12 +174,21 @@ function hamster_menu() {
 function hamster_list() {
   $output = ' ';
   
+  $items_per_page = 10;
+  
+  /* get total up front for paging */
+  /* use fetchField to return the first value, from first row */
+  $total = db_query("SELECT COUNT(*) FROM {hamster}")->fetchField();
+
+  /* this will return current user page */
+  $page = pager_default_initialize($total, $items_per_page);
+  
   /* use AS habitat otherwise both tables have column name */
   $results = db_query_range("SELECT h.*, hh.name AS habitat_name
                        FROM {hamster} h
                        LEFT JOIN {hamster_habitat} hh ON hh.id=h.habitat_id",
-    0, /* starting value */
-    10 /* number of results to show each time */
+    $page * $items_per_page, /* starting value for this page */
+    $items_per_page /* number of results to show each time */
     );
 
   $rows = array();
@@ -43,7 +201,7 @@ function hamster_list() {
 
     $row = array(
       $record->id,
-      $record->name,
+      l($record->name, 'hamster/' . $record->id), /* l-function makes a link. params are label, link */
       $record->gender,
       t('@weight g', array('@weight' => $record->weight)), /* use translate with a label */
       format_date($record->birthdate, 'custom', 'Y-m-d'),  /* see PHP date. we removed hours/min/sec */
@@ -72,6 +230,7 @@ function hamster_list() {
   
   /* uses theme_table to display in a formatted table */
   $output .= theme('table', $variables);
+  $output .= theme('pager');
   return ($output);
 }
 
@@ -80,6 +239,10 @@ function hamster_permission() {
     'view hamster' => array(
       'title' => t('View Hamsters'),
       'description' => t('View information about hamsters in the database.'),
-    )
+    ), 
+    'edit hamsters' => array(
+      'title' => t('Edit Hamsters'),
+      'description' => t('Edit information about hamsters in the database.'),    
+    ),
   );
 }
