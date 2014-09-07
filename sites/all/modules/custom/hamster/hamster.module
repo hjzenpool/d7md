@@ -45,6 +45,8 @@ function hamster_menu() {
     'access arguments' => array('edit hamsters'), /* permission */
   );
   
+  
+  /* object-oriented database functions */
     $items['hamster-oo'] = array(
     'title' => 'Hamsters Object-oriented',
     'page callback' => 'hamster_oo_list',
@@ -80,15 +82,36 @@ function hamster_menu() {
     'access arguments' => array('edit hamsters'), /* permission */
   );
   
+  /* object-oriented database functions using database schema API */
+  /*
+    $items['hamster-write'] = array(
+    'title' => 'Hamsters using Schema API',
+    'page callback' => 'hamster_write_list',
+    'access arguments' => array('view hamster'),
+  );
+   * 
+   */
+  
+    
+  /* oo insert using function from database schema API */
+  $items['hamster-write/insert'] = array(
+    'title' => 'DB Insert',
+    'page callback' => 'hamster_write_insert',
+    'access arguments' => array('edit hamsters'), /* permission */
+  );
+   
+  /* oo update using function from database schema API */
+  $items['hamster-write/update'] = array(
+    'title' => 'DB update',
+    'page callback' => 'hamster_write_update',
+    'access arguments' => array('edit hamsters'), /* permission */
+  );
+  
   return $items;
 }
 
-/* example with SQL that does an insert
- * page callback for insert
- * second param is keyed array with the values
- *  * use ':' in front of variables
- */
-function hamster_insert() {
+/* insert using Schema API */
+function hamster_write_insert() {
   db_query("INSERT INTO {hamster} (name, gender, weight, birthdate, image, habitat_id)
             VALUES (:name, :gender, :weight, :birth, :image, :habitat)",
     array(
@@ -100,6 +123,34 @@ function hamster_insert() {
       ':habitat' => 3,
     )
   );
+  return t('Inserted');
+}
+
+/* update using Schema API */
+function hamster_write_update() {
+  
+  /* indicate primary field and what you are changing */
+  $hamster = array(
+    'id' => 23,
+    'habitat_id' => 1, 
+    );
+  
+  /* 3rd param indicates how to find the record to be updated */
+  drupal_write_record('hamster', $hamster, array('id'));
+  return t('Updated');
+}
+
+/* insert using Schema API */
+function hamster_insert() {
+  $hamster = array(
+      'name' => 'Test',
+      'gender' => 'male',
+      'weight' => 150,
+      'birthdate' => REQUEST_TIME,
+      'image' => '',
+      'habitat_id' => 3,
+    );
+  drupal_write_record('hamster', $hamster);
   return t('Inserted');
 }
 
