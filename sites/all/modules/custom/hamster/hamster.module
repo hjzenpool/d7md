@@ -45,6 +45,41 @@ function hamster_menu() {
     'access arguments' => array('edit hamsters'), /* permission */
   );
   
+    $items['hamster-oo'] = array(
+    'title' => 'Hamsters Object-oriented',
+    'page callback' => 'hamster_oo_list',
+    'access arguments' => array('view hamster'),
+  );
+  
+  /* filter based on male or female, as example of oo query */
+  $items['hamster-oo/%'] = array(
+    'title' => 'Hamsters',
+    'page callback' => 'hamster_oo_list',
+    'page arguments' => array(1),
+    'access arguments' => array('view hamster'),
+  );
+  
+  /* oo insert */
+  $items['hamster-oo/insert'] = array(
+    'title' => 'DB Insert',
+    'page callback' => 'hamster_oo_insert',
+    'access arguments' => array('edit hamsters'), /* permission */
+  );
+    
+  /* oo update */
+  $items['hamster-oo/update'] = array(
+    'title' => 'DB update',
+    'page callback' => 'hamster_oo_update',
+    'access arguments' => array('edit hamsters'), /* permission */
+  );
+    
+  /* oo delete */
+  $items['hamster-oo/delete'] = array(
+    'title' => 'DB delete',
+    'page callback' => 'hamster_oo_delete',
+    'access arguments' => array('edit hamsters'), /* permission */
+  );
+  
   return $items;
 }
 
@@ -232,6 +267,122 @@ function hamster_list() {
   $output .= theme('table', $variables);
   $output .= theme('pager');
   return ($output);
+}
+
+/* object-oriented version of hamster_list
+ * optional gender filter
+ */
+function hamster_oo_list($gender = NULL) {
+  $output = '';
+
+  /* 
+   * create query object.
+   * create functions to grow the query object
+   * h is table alias.
+   * do not need curly-brackets when use this way
+   */
+  $query = db_select('hamster', 'h');
+    
+  /* add join to the query object */
+  $query->join('hamster_habitat', 'hh', 'hh.id=h.habitat_id');
+    
+  /* fields you want to return (but this doesn't support aliasing */
+  $query->fields('h');
+    
+  /* use this for column alias: table, field, alias */
+  $query->addField('hh', 'name', 'habitat_name');
+  
+  /* optional filter */
+  if (!empty($gender)) {
+    /* add optional condition: field, variable, comparison */
+    $query->condition('h.gender', $gender, '=');
+  }
+  $query->orderBy('h.id');
+  $query = $query->extend('PagerDefault')->limit(10);  /* create pager with 10 lines per page */
+  $results=$query->execute();
+    
+  $rows = array();
+  
+  /* record is an object with properties of the db column names */
+  foreach ($results as $record) {
+    
+    /* can use this just to print the data, nothing fancy */
+    /* $output .= $record->id . ' | ' . $record->name . ' | ' . $record->gender . '<br />'; */
+
+    $row = array(
+      $record->id,
+      l($record->name, 'hamster/' . $record->id), /* l-function makes a link. params are label, link */
+      $record->gender,
+      t('@weight g', array('@weight' => $record->weight)), /* use translate with a label */
+      format_date($record->birthdate, 'custom', 'Y-m-d'),  /* see PHP date. we removed hours/min/sec */
+      theme('image_style', array(
+        'style_name' => 'thumbnail',
+        'path' => file_build_uri($record->image))), /* image contains relative path */
+      $record->habitat_name,
+    );
+    $rows[] = $row;
+  }
+  
+  $header = array(
+    t('ID'),
+    t('Name'),
+    t('Gender'),
+    t('Weight'),
+    t('Birth Date'),
+    t('Image'),
+    t('Habitat'),
+  );
+  
+  $variables = array(
+    'rows' => $rows,
+    'header' => $header,
+  );
+  
+  /* uses theme_table to display in a formatted table */
+  $output .= theme('table', $variables);
+  $output .= theme('pager');
+  return ($output);
+}
+
+
+/* oo insert
+ */
+function hamster_oo_insert() {
+
+  db_insert('hamster')->fields(array(
+      'name' => 'Test',
+      'gender' => 'male',
+      'weight' => 150,
+      'birthdate' => REQUEST_TIME,
+      'image' => '',
+      'habitat_id' => 3,
+      )
+    )->execute();
+
+  return t('Inserted');
+}
+
+/* example of update callback */
+function hamster_oo_update() {
+  
+  db_update('hamster')->fields(array(
+      'habitat_id' => 1,
+      )
+    )
+    ->condition('name', 'Test', '=')
+    ->execute();
+    
+  return t('Updated');
+}
+
+/* example of delete callback */
+function hamster_oo_delete() {
+  
+  db_delete('hamster')
+    ->condition('name', 'Test')
+    ->execute();
+  
+  return t('Deleted');
 }
 
 function hamster_permission() {
