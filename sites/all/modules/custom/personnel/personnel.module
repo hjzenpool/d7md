@@ -1,0 +1,46 @@
+<?php
+/*
+ * example of using legacy database, using db_set_active
+ */
+function personnel_menu() {
+  $items = array();
+  
+  $items['personnel'] = array(
+    'title' => 'Personnel',
+    'page callback' => 'personnel_list',
+    'access arguments' => array('access content'), 
+  );
+  
+  return $items;
+}
+
+function personnel_list() {
+  
+  $header = array(
+    t('First Name'),
+    t('Last Name'),
+    t('Department'),
+    );
+  $rows = array();
+  
+  /* select non-default database */
+  db_set_active('phpclass'); /* use value from sites/default/settings.php */
+  
+  $results = db_query("SELECT p.*, d.name AS department_name FROM {personnel} p
+    LEFT JOIN {department_members} dm ON p.id = dm.personnel_id
+    LEFT JOIN {department} d ON dm.department_id = d.id
+    ORDER BY p.lname, p.fname");
+  
+  foreach ($results as $record) {
+    $rows[] = array(
+      $record->fname,
+      $record->lname,
+      $record->department_name,
+    );
+  }
+  
+  /* always be sure to do this before return */
+  db_set_active('default');  /* revert to default database  */
+    
+  return theme('table', array('header' => $header, 'rows' => $rows));
+}

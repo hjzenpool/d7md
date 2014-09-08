@@ -1,0 +1,5 @@
+name = Personnel Database Connector
+core = 7.x
+description = Example of working with legacy databases.
+package = DrupalTutor
+version = 7.x-0.1
