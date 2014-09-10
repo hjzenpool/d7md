@@ -392,7 +392,7 @@ function hamster_oo_list($gender = NULL) {
   /* uses theme_table to display in a formatted table */
   $output .= theme('table', $variables);
   $output .= theme('pager');
-  return ($output);
+  return ($output); /* return the HTML to display in the page */
 }
 
 
