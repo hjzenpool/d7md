@@ -1,0 +1,5 @@
+name = Basic Form example
+core = 7.x
+description = Example of creating forms in Drupal
+package = DrupalTutor
+version = 7.x-0.1

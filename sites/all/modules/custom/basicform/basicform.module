@@ -1,0 +1,115 @@
+<?php
+
+/* this implements a hook_menu */
+function basicform_menu() {
+  $items = array();
+  
+  $items['basicform'] = array(
+    'title' => 'Basic Form Example',
+    'page callback' => 'basicform_example_page',
+    'access arguments' => array('access content'),
+  );
+  
+  return $items;
+}
+
+/* page callback */
+function basicform_example_page() {
+
+  /* retrieve a custom form using drupal_get_form */
+  $form = drupal_get_form('basicform_example_form');
+  
+  /* display form in HTML */
+  $output = drupal_render($form);
+  
+  return $output;
+}
+
+/* function to return the form */
+/* form definition function always has these first 2 parameters */
+/* note: pass by reference: form_state */
+/* form_state indicates if submitted */
+function basicform_example_form($form, &$form_state) {
+  
+  /* fill in the form definition array */
+  /* associated array of arrays */
+  /* use the keys 'name',... later to retrieve the values */
+  $form['name'] = array(
+    '#title' => t('Name'),
+    '#type' => 'textfield', /* single line field */
+    '#required' => TRUE, /* displays a STAR and forces validation */
+  );
+  
+  $form['name'] = array(
+    '#title' => t('Name'),
+    '#type' => 'textfield',
+    '#required' => TRUE,
+  );
+    
+  $form['email'] = array(
+    '#title' => t('Email'),
+    '#type' => 'textfield',
+    '#required' => TRUE,
+  );
+      
+  $form['phone'] = array(
+    '#title' => t('Phone'),
+    '#type' => 'textfield',
+  );
+        
+  $form['message'] = array(
+    '#title' => t('Message'),
+    '#type' => 'textarea',
+  );
+        
+  /* submit button */
+  $form['send'] = array(
+    '#type' => 'submit',
+    '#value' => t('Send Feedback'),
+  );
+  
+  return $form;
+}
+
+/* validation function for basicform_example_form */
+/* this is automatically called */
+/* check that phone has at least 10 digits and throw an error if it is not valid */
+function basicform_example_form_validate($form, &$form_state) {
+  /* dpm($form_state); */
+  
+  /* pull value from form for validation */
+  $phone_number = $form_state['values']['phone'];
+  
+  /* use regex to strip out non-digits */
+  $phone_number = preg_replace('/[^0-9]/', '', $phone_number);
+
+  /* validate that form contains 10 digits */
+  if (strlen($phone_number) < 10) {
+    form_set_error('phone', t('Please enter a complete phone number, with area code.'));
+  }
+  
+  /* check for valid email address */
+  $email = $form_state['values']['email'];
+
+  if (!valid_email_address($email)) {
+    form_set_error('email', t('Please enter a valid email address.'));
+    }
+}
+
+/* function to process submitted form */
+function basicform_example_form_submit($form, &$form_state) {
+  /* second param can be:
+   *  'status' (default), 
+   * 'warning': displays in yellow, 
+   * 'error': displays error message
+   */
+ 
+  drupal_set_message(t('Thanks, we\'ll get back to you, @name!',
+    array('@name' => $form_state['values']['name'])),'warning');
+  
+  /* other types of error message: */
+  drupal_set_message(t('Looks BAD!'),'error');
+  drupal_set_message(t('Looks good!'));
+
+  dpm($form_state['values']);
+}
