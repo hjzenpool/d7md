@@ -1,0 +1,5 @@
+name = Kitchen Sink Form
+core = 7.x
+description = Examples of bunch of different types of form elements in Drupal
+package = DrupalTutor
+version = 7.x-0.1

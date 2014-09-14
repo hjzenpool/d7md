@@ -1,0 +1,156 @@
+<?php
+
+/* this implements a hook_menu */
+function kitchen_sink_menu() {
+  $items = array();
+  
+  $items['kitchen-sink'] = array(
+    'title' => 'Kitchen Sink Form Example',
+    'page callback' => 'drupal_get_form',  /* if page is only a form, the callback can just be drupal_get_form */
+    'page arguments' => array('kitchen_sink_example_form'), /* page argument is the form name */
+    'access arguments' => array('access content'),
+  );
+  
+  $items['kitchen-sink/autohamster'] = array(
+    'page callback' => 'kitchen_sink_autocomplete_hamster',
+        'access arguments' => array('access content'),
+  );
+  
+  return $items;
+}
+
+/* function to return the form */
+/* form definition function always has these first 2 parameters */
+/* note: pass by reference: form_state */
+/* form_state indicates if submitted */
+function kitchen_sink_example_form($form, &$form_state) {
+  
+  /* fill in the form definition array */
+  /* associated array of arrays */
+  /* use the keys 'name',... later to retrieve the values */
+  $form['name'] = array(
+    '#title' => t('Name'),
+    '#type' => 'textfield', /* single line field */
+    '#required' => TRUE, /* displays a STAR and forces validation */
+    '#default_value' => !empty($GLOBALS['user']->name) ? $GLOBALS['user']->name : '', /* set default value */
+  );
+  
+  /* example of fieldset (group of fields) */
+  $form['group_one'] = array(
+    '#title' => t('Group One'),
+    '#type' => 'fieldset',
+  );
+   
+  /* values for dropdown box */
+  /* use internal value and human-readable label */
+  $departments = array(
+    ''        => t('--Select a Department--'),
+    'service' => t('Customer Service'),
+    'hr'      => t('Human Resources'),    
+    'it'      => t('Information Technology'),    
+    'sales'   => t('Sales'),    
+  );
+  /* first element inside of form 'group_one' */
+  $form['group_one']['department'] = array(
+    '#title' => t('Department'),
+    '#type' => 'select',  /* dropdoun box */
+    '#options' => $departments,
+    '#default_value' => 'it',  /* otherwise, the top item will be default */
+  );
+  
+  /* second element inside of form 'group_one' */
+  $form['group_one']['department_multi'] = array(
+    '#title' => t('Departments (Multiselect)'),
+    '#type' => 'select',  /* dropdoun box */
+    '#options' => $departments,
+    '#multiple' => TRUE,  /* allow for multiple selections */
+    '#default_value' => array('it', 'service'),  /* default can be multiple selections */
+  );
+    
+  $intervals = array(
+    'hourly' => t('Hourly'),
+    'daily' => t('Daily'),
+    'weekly' => t('Weekly'),
+    'monthly' => t('Monthly'), 
+  );
+        
+  /* third element inside of form 'group_one' */
+  $form['group_one']['receive_updates'] = array(
+    '#title' => t('Receive Updates'),
+    '#type' => 'checkboxes',
+    '#options' => $intervals,
+    '#default_value' => array('daily'),
+  );
+  
+  
+  
+  /* second group is collapsible */
+  $form['group_two'] = array(
+    '#title' => t('Group Two'),
+    '#type' => 'fieldset',
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+  );  
+  
+  /* single checkbox with title next to it */
+  $form['group_two']['subscribe'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Subscribe to our newsletter'),
+    '#default_value' => TRUE,
+  );
+ 
+  /* radio box, with array inline instead of as separate variable */
+  $form['group_two']['gender'] = array(
+    '#type' => 'radios',
+    '#title' => t('Gender'),
+    '#options' => array('male' => t('Male'), 'female' => t('Female')),
+  );
+  
+  $form['group_two']['message'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Message'),
+    '#rows' => 5, /* number of rows before it starts scrolling */
+    '#description' => t('Please enter a message here.'),
+  );
+  
+  /* third group */
+  $form['group_three'] = array(
+    '#title' => t('Group Three'),
+    '#type' => 'fieldset',
+  );  
+  
+  /* attributes key allows you to put any HTML on input text */
+  $form['group_three']['username'] = array(
+    '#title' => t('Username'),
+    '#type' => 'textfield',
+    '#maxlength' => 10,
+    '#size' => 30,
+    '#attributes' => array('class' => array('kitchen-sink-highlight')), /* use special CSS class */
+    '#description' => t('Your username can be a maximum of 10 characters'),
+  );
+  
+  /* password type hides input */
+  $form['group_three']['password'] = array(
+    '#type' => 'password',
+    '#title' => t('Simple Password'),
+    '#description' => t('Please enter a password'),
+  );
+  
+  /* password_confirm type displays Password strength. has 2 fields, checks that passwords match */
+  $form['group_three']['password_two'] = array(
+    '#type' => 'password_confirm',
+    '#title' => t('Password (with confirm)'),
+  );
+    
+  
+  /* next group */
+  $form['group_four'] = array(
+    '#title' => t('Group Four'),
+    '#type' => 'fieldset',
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    ); 
+  
+  
+  return $form;
+}
