@@ -1,0 +1,5 @@
+name = File Demo
+core = 7.x
+description = Examples of File demo in Drupal
+package = DrupalTutor
+version = 7.x-0.1

@@ -1,0 +1,127 @@
+<?php
+
+/* hook menu */
+function filedemo_menu() {
+  $items = array();
+  
+  /* unmanaged */
+  $items['filedemo'] = array(
+    'title' => 'File Upload Demo',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('filedemo_form'),
+    'access arguments' => array('access contents'),
+  );
+  
+  /* managed file */
+  $items['filedemo-managed'] = array(
+    'title' => 'Managed File Upload Demo',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('filedemo_managed_form'),
+    'access arguments' => array('access contents'),
+  );
+  
+  return $items;
+}
+
+/* create unmanaged file form */
+function filedemo_form($form, &$form_state) {
+  
+  /* file type creates entry and browse */
+  $form['demo'] = array(
+    '#type' => 'file',
+    '#title' => t('Upload your file here'),
+  );
+  
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Submit'),
+  );
+  
+  return $form;
+}
+
+/* submit handler for unmanaged file */
+/* DRUPAL inconsistency:
+ * uploaded managed file is not in form_state. instead, it is found in $_FILES
+ * 
+ * this callback will copy file from temp to our desired location
+ * 
+ * when I ran,
+ * it went here: http://localhost:8080/drupal/sites/default/files/filedemo/photo%202.JPG
+ * 
+ */
+function filedemo_form_submit($form, &$form_state) {
+  dpm($form_state);
+  dpm($_FILES); /* dump this because unmanaged file does not appear in form_state */
+
+  /* build a file uri for the directory where files will be stored */
+  /* file_build_uri will give you a directory under public://filedemo, which is mounted as:
+   * sites/default/filedemo (based on setting of public direcory
+   */
+  $directory = file_build_uri('filedemo');
+  dpm($directory); /* dump the location of the directory */
+  
+  /* make sure directory exists (create if it doesn't) */
+  file_prepare_directory($directory, FILE_CREATE_DIRECTORY);
+  
+  /* tmp_name is temporary location where file is uploaded */
+  /* move file from tmp_name location into our desired directory */
+  /* NOTE that if you upload a file a second time, you will get a new file */
+  /* by default, file_unmanaged_move will make a copy with _n in the filename,
+   * unless you put FILE_EXISTS_REPLACE or FILE_EXISTS_ERROR
+   */
+  $filepath = file_unmanaged_move($_FILES['files']['tmp_name']['demo'], /* source */
+    file_build_uri('filedemo/' . $_FILES['files']['name']['demo']));   /* dest */
+ 
+  /* create full url from the filepath */
+  $url = file_create_url($filepath);
+  drupal_set_message(t('Your file is here: !url', array('!url' => l($url, $url))));
+
+}
+
+/* create managed file form */
+/* Drupal will take care of copying the file, store it in database, and give you a file id */
+/* managed file adds an Upload button */
+function filedemo_managed_form($form, &$form_state) {
+  
+  $form['demo_fid'] = array(
+    '#type' => 'managed_file',
+    '#title' => t('Upload your file here'),
+    '#upload_location' => 'public://filedemo_managed/',
+    );
+  
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Submit'),
+  );
+  
+  return $form;
+}
+
+/* with managed file, the file is returned in form_state in demo_fid */
+/* 
+ * Drupal will handle copying the file
+ * file will be in filesystem
+ * and will also be entered in database in file_managed table, and file_usage table,
+ * which logs the program and user that accessed the file
+ * 
+ * pressing Upload button copies the file and adds it to database, with status of 0
+ * status of 0 will get cleaned up by a cron job unless 
+ * so, it is in a temporary state until you press Submit.
+ * The submit callback (Pressing Submit) makes it permanent
+ */
+function filedemo_managed_form_submit($form, &$form_state) {
+  dpm($form_state);
+  
+  $file = file_load($form_state['values']['demo_fid']);
+  $file->status = FILE_STATUS_PERMANENT;
+  file_save($file);
+  
+  /* this stores entry in file_usage table */
+  file_usage_add($file, 'filedemo', 'user', $GLOBALS['user']->uid);
+  dpm($file);
+  
+  $url = file_create_url($file->uri);
+  drupal_set_message(t('Your FID is @fid, your file is here: !url', 
+    array('@fid' => $file->fid, '!url' => l($url, $url))));
+}
