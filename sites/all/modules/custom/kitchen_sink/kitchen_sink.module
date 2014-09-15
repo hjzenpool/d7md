@@ -11,6 +11,9 @@ function kitchen_sink_menu() {
     'access arguments' => array('access content'),
   );
   
+  /* create a menu route for using the custom autocomplete */
+  /* doesn't need a title since this doesn't actually get themed */
+  /* it is just used to generate URL's of hamster names, for autocomplete */
   $items['kitchen-sink/autohamster'] = array(
     'page callback' => 'kitchen_sink_autocomplete_hamster',
         'access arguments' => array('access content'),
@@ -151,6 +154,150 @@ function kitchen_sink_example_form($form, &$form_state) {
     '#collapsed' => TRUE,
     ); 
   
+  /* fied prefix goes before the field */
+  $form['group_four']['total'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Total'),
+    '#field_prefix' => '$',
+    '#size' => 10,
+  );
+    
+  /* default weight is 0. 
+   * default ordering is the order they are created
+   * lower weights float up higher (within fieldset)
+   */
+  $form['group_four']['amount'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Amount'),
+    '#field_suffix' => 'grams', /* field suffix puts label after the text field */
+    '#size' => 10,
+    '#weight' => -1,
+  );
+  
+  /* prefix and suffix go above and below the field */
+  $form['group_four']['order_notes'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Order Notes'),
+    '#prefix' => '<p>' . t('Enter any order notes below.') . '</p>',
+    '#suffix' => '<p>' . t('Enter any order notes above.') . '</p>',
+  );
+  
+  
+  /* next group */
+  $form['group_five'] = array(
+    '#title' => t('Group Five'),
+    '#type' => 'fieldset',
+    ); 
+  
+  /* disabled: NOTE: submit handler doesn't return values for any disabled fields */
+  $form['group_five']['disabled_text'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Disabled Text'),
+    '#default_value' => t('This is some default text.'),
+    '#disabled' => TRUE,
+  );
+  
+  /* read-only, can be selected but not entered. submission will return the value */
+  $form['group_five']['readonly_text'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Read-only Text'),
+    '#default_value' => t('This is some default text.'),
+    '#attributes' => array('readonly' => 'readonly'),
+  );
+  
+  /* hidden doesn't show on page, but it WILL be shown in page source */
+  $form['group_five']['secret_value'] = array(
+    '#type' => 'hidden',
+    '#value' => t('the secret password'),
+  );
+    
+  /* type 'value' does not show up in HTML, but DOES get returned in submission */
+  /* more secure than hidden */
+  $form['group_five']['supersecret_text'] = array(
+    '#type' => 'value',
+    '#value' => t('the supersecret password'),
+  );
+          
+  /* access FALSE hides it from user, similar to supersecret */
+  /* more likely, access would be set based on the user account */
+  /* admin user is uid=1 */
+  $form['group_five']['topsecret_text'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Top Secret Password'),
+    '#default_value' => t('the top secret password'),
+    '#access' => ($GLOBALS['user']->uid == 1) ? TRUE : FALSE, /* give access to admin */
+    /* '#access' => user_access('administer nodes'), */  /* give access to users who can edit nodes */
+    );
+    
+  /* autocomplete */
+  /* specify the URL to call to get list of possible results */
+  /* this autocompletes based on valid user names because each username has a valud URL */
+  $form['group_five']['user_ac'] = array(
+    '#type' => 'textfield',
+    '#title' => t('User Account'),
+    '#autocomplete_path' => 'user/autocomplete',   
+  );
+      
+  /* this uses the defined callback */
+  /* custom autocomplete searches for hamster names */ 
+  /* using a custom path. the path is created above by a hook menu with a page callback
+   * that selects hamsters from the database
+   */
+  $form['group_five']['custom_ac'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Custom Autocomplete'),
+    '#autocomplete_path' => 'kitchen-sink/autohamster',   
+  ); 
+  
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Submit Form'),
+  );
+  
+  $form['othersubmit'] = array(
+    '#type' => 'submit',
+    '#value' => t('No. use me!'),
+  );
+  
+  /* can insert HTML anywhere within the form */
+  $form['finish_line'] = array(
+    '#type' => 'markup',
+    '#markup' => '<p><string>' . t('Congratulations!') .
+                 '</string>' . t('You have made it to the end of the form.') .
+                 '</p>',
+  );
+  
+  /* attack a css to the form */
+  $form['#attached']['css'] = array(
+    drupal_get_path('module', 'kitchen_sink') . '/kitchen_sink.css',
+  );
+  
+  /* this causes values to be nested in form_state based on their fieldset.
+   * default is all at top-level, which requires unique key values
+   */
+  /* can also set this for individual field-set */
+  $form['#tree'] = TRUE;
   
   return $form;
+}
+
+/* use this for autocompletes */
+function kitchen_sink_autocomplete_hamster($string = '') {
+  $matches = array();
+  if ($string) {
+    $result = db_select('hamster')
+      ->fields('hamster', array('name'))
+      ->condition('name', db_like($string) . '%' , 'LIKE')
+      ->range(0, 10)
+      ->execute();
+   foreach ($result as $user) {
+     $matches[$user->name] = check_plain($user->name);
+   }   
+  }
+  
+  drupal_json_output($matches);
+}
+
+function kitchen_sink_example_form_submit($form, &$form_state) {
+  dpm($form_state);
 }
