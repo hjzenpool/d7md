@@ -1,5 +1,5 @@
 name = Hamster DB
+description = An example of how to work with databases in Drupal.
 core = 7.x
-description = Example of using databases.
-package = DrupalTutor
 version = 7.x-0.1
+package = DrupalTutor

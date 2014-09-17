@@ -1,9 +1,19 @@
 <?php
 
+/* 
+ * put install functions
+ */
+
+/* define database schema.
+ * copied from ADMIN /structure /schema/extra/inspect 
+ * NOTE: must return schema
+ */
 function hamster_schema() {
+  
+  /* hamster table */
   $schema['hamster'] = array(
-    'description' => 'TODO: please describe this table!',
-   'fields' => array(
+  'description' => 'TODO: please describe this table!',
+  'fields' => array(
     'id' => array(
       'description' => 'TODO: please describe this field!',
       'type' => 'serial',
@@ -45,7 +55,9 @@ function hamster_schema() {
   ),
   'primary key' => array('id'),
 );
- $schema['hamster_habitat'] = array(
+  
+    /* hamster_habitat table */
+  $schema['hamster_habitat'] = array(
   'description' => 'TODO: please describe this table!',
   'fields' => array(
     'id' => array(
@@ -66,7 +78,9 @@ function hamster_schema() {
     ),
   ),
   'primary key' => array('id'),
-  );
+);
 
+  
   return $schema;
 }
+
