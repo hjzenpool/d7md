@@ -1,0 +1,82 @@
+<?php
+
+/* this implements a hook_form_alter 
+ * we just want to change the article form
+ */
+function agreetopost_form_alter(&$form, &$form_state, $form_id) {
+  /* this causes formid to be printed on every page */
+  // dpm($form_id);
+  
+  /* we want to only alter article_node_form */
+  if ($form_id == 'article_node_form') {
+
+    /* alter a label */
+    $form['title']['#title'] = t('Article title');
+    $form['title']['#size'] = 100; /* increase standard size */
+    
+    /* move image above body */
+    $form['field_image']['#weight'] = -4; 
+    $form['body']['#weight'] = -3;
+     
+    /* hide a field from everyone but admin */
+    $form['field_image']['#access'] = ($GLOBALS['user']->uid == 1) ? TRUE : FALSE;
+
+    /* set weight of Actions container that contains the submit button */ 
+    $form['actions']['#weight'] = 101;
+        
+    /* add a new field afer Actions */
+    /* include your modulename in order to make a unique name */
+    $form['agreetopost'] = array(
+      '#type' => 'checkbox',
+      '#title' => 'I agree to the Terms and Conditions of this Site',
+      '#weight' => 101,  /* find value by looking at existing weight values */
+    );
+    
+    /* if nid has a value, it means that the node has already been saved once */
+    /* if it's already been saved, then we don't need the agree again */
+    if (!empty($form['nid']['#value'])) {
+      $form['agreetopost']['#disabled'] = TRUE;
+      $form['agreetopost']['#default_value'] = TRUE;   
+    }
+    
+    /* add a second validation */
+    $form['#validate'][] = 'agreetopost_node_validate_form';
+    
+    /* one way to add a submit handler */
+    /* $form['#submit'][] = 'agreetopost_node_submit'; */
+    
+    /* add a submit under actions AFTER any other save function 
+     * [] adds to end of array
+     */
+    /* $form['actions']['submit']['#submit'][] = 'agreetopost_node_submit_form'; */
+    
+    /* add a submit function BEFORE any other save function.
+     * array_unshift() adds to beginning of array
+     * this allows you to modify value before it gets saved, 
+     * or perhaps retrieve additional data to be saved
+     */
+    array_unshift($form['actions']['submit']['#submit'], 'agreetopost_node_submit_form');
+    
+    /* dump fiels in the form */
+    dpm($form);   
+  }
+}
+
+/* new validation that we added to the form */
+/* note, if editing an existing node, since it is disabled, it will not be returned in form_set */
+function agreetopost_node_validate_form(&$form, &$form_state) {
+  /* verify that checkbox is in the form and that it is checked */
+  if (isset($form_state['values']['agreetopost']) &&
+    empty($form_state['values']['agreetopost'])) {
+    form_set_error('agreetopost', t('You must agree to the Terms and Conditions of this Site'));
+  }
+}
+
+/* display a message after saving */
+function agreetopost_node_submit_form(&$form, &$form_state) {
+  /* only display the first time and when not empty */
+  if (isset($form_state['values']['agreetopost']) &&
+    !empty($form_state['values']['agreetopost'])) {
+    drupal_set_message(t('You have agreed to the Terms and Conditions.'));
+  }
+}

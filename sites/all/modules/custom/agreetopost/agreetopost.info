@@ -1,0 +1,5 @@
+name = Agree to post
+core = 7.x
+description = Force users to agree to terms before node posts are accepted. example of altering form
+package = DrupalTutor
+version = 7.x-0.1

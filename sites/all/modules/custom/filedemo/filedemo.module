@@ -121,6 +121,10 @@ function filedemo_managed_form_submit($form, &$form_state) {
   file_usage_add($file, 'filedemo', 'user', $GLOBALS['user']->uid);
   dpm($file);
   
+  /* NOTE: l- function returns a LINK. 
+   * so we use !uid instead of @uid because !uid does not strip out
+   * all code that looks like HTML or Javascript and could be malicious
+   */
   $url = file_create_url($file->uri);
   drupal_set_message(t('Your FID is @fid, your file is here: !url', 
     array('@fid' => $file->fid, '!url' => l($url, $url))));
