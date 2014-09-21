@@ -6,6 +6,7 @@
 function hamster_menu() {
   $items = array();
   
+  /* callaack for hamster list */
   $items['hamster'] = array(
     'title' => 'Hamsters',
     'page callback' => 'hamster_list',
