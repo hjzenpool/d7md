@@ -6,79 +6,79 @@
  * and open the template in the editor.
  */
 
-function hamster_menu() {
+function first_hamster_menu() {
   $items = array();
   
-  $items['hamster'] = array(
-    'title' => 'Hamsters',
-    'page callback' => 'hamster_list',
+  $items['first_hamster'] = array(
+    'title' => 'first_Hamsters',
+    'page callback' => 'first_hamster_list',
     'access arguments' => array('view hamster'),
   );
   
   /* create a menu path */
-  $items['hamster/%hamster'] = array(
-    'title callback' => 'hamster_page_title',  /* dynamically set title based on name */
+  $items['first_hamster/%hamster'] = array(
+    'title callback' => 'first_hamster_page_title',  /* dynamically set title based on name */
     'title arguments' => array(1), /* pass hamster id to title callback */
-    'page callback' => 'hamster_page',
+    'page callback' => 'first_hamster_page',
     'page arguments' => array(1),
     'access arguments' => array('view hamster'), /* permission */
   );
     
   /* insert */
-  $items['hamster/insert'] = array(
+  $items['first_hamster/insert'] = array(
     'title' => 'DB Insert',
-    'page callback' => 'hamster_insert',
+    'page callback' => 'first_hamster_insert',
     'access arguments' => array('edit hamsters'), /* permission */
   );
     
   /* update */
-  $items['hamster/update'] = array(
+  $items['first_hamster/update'] = array(
     'title' => 'DB update',
-    'page callback' => 'hamster_update',
+    'page callback' => 'first_hamster_update',
     'access arguments' => array('edit hamsters'), /* permission */
   );
     
   /* delete */
-  $items['hamster/delete'] = array(
+  $items['first_hamster/delete'] = array(
     'title' => 'DB delete',
-    'page callback' => 'hamster_delete',
+    'page callback' => 'first_hamster_delete',
     'access arguments' => array('edit hamsters'), /* permission */
   );
   
   
   /* object-oriented database functions */
-    $items['hamster-oo'] = array(
-    'title' => 'Hamsters Object-oriented',
-    'page callback' => 'hamster_oo_list',
+    $items['first_hamster-oo'] = array(
+    'title' => 'first_Hamsters Object-oriented',
+    'page callback' => 'first_hamster_oo_list',
     'access arguments' => array('view hamster'),
   );
   
   /* filter based on male or female, as example of oo query */
-  $items['hamster-oo/%'] = array(
-    'title' => 'Hamsters',
-    'page callback' => 'hamster_oo_list',
+  $items['first_hamster-oo/%'] = array(
+    'title' => 'first_Hamsters',
+    'page callback' => 'first_hamster_oo_list',
     'page arguments' => array(1),
     'access arguments' => array('view hamster'),
   );
   
   /* oo insert */
-  $items['hamster-oo/insert'] = array(
+  $items['first_hamster-oo/insert'] = array(
     'title' => 'DB Insert',
-    'page callback' => 'hamster_oo_insert',
+    'page callback' => 'first_hamster_oo_insert',
     'access arguments' => array('edit hamsters'), /* permission */
   );
     
   /* oo update */
-  $items['hamster-oo/update'] = array(
+  $items['first_hamster-oo/update'] = array(
     'title' => 'DB update',
-    'page callback' => 'hamster_oo_update',
+    'page callback' => 'first_hamster_oo_update',
     'access arguments' => array('edit hamsters'), /* permission */
   );
     
   /* oo delete */
-  $items['hamster-oo/delete'] = array(
+  $items['first_hamster-oo/delete'] = array(
     'title' => 'DB delete',
-    'page callback' => 'hamster_oo_delete',
+    'page callback' => 'first_hamster_oo_delete',
     'access arguments' => array('edit hamsters'), /* permission */
   );
   
@@ -94,16 +94,16 @@ function hamster_menu() {
   
     
   /* oo insert using function from database schema API */
-  $items['hamster-write/insert'] = array(
+  $items['first_hamster-write/insert'] = array(
     'title' => 'DB Insert',
-    'page callback' => 'hamster_write_insert',
+    'page callback' => 'first_hamster_write_insert',
     'access arguments' => array('edit hamsters'), /* permission */
   );
    
   /* oo update using function from database schema API */
-  $items['hamster-write/update'] = array(
+  $items['first_hamster-write/update'] = array(
     'title' => 'DB update',
-    'page callback' => 'hamster_write_update',
+    'page callback' => 'first_hamster_write_update',
     'access arguments' => array('edit hamsters'), /* permission */
   );
   
@@ -111,7 +111,7 @@ function hamster_menu() {
 }
 
 /* insert using Schema API */
-function hamster_write_insert() {
+function first_hamster_write_insert() {
   db_query("INSERT INTO {hamster} (name, gender, weight, birthdate, image, habitat_id)
             VALUES (:name, :gender, :weight, :birth, :image, :habitat)",
     array(
@@ -127,7 +127,7 @@ function hamster_write_insert() {
 }
 
 /* update using Schema API */
-function hamster_write_update() {
+function first_hamster_write_update() {
   
   /* indicate primary field and what you are changing */
   $hamster = array(
@@ -141,7 +141,7 @@ function hamster_write_update() {
 }
 
 /* insert using Schema API */
-function hamster_insert() {
+function first_hamster_insert() {
   $hamster = array(
       'name' => 'Test',
       'gender' => 'male',
@@ -155,7 +155,7 @@ function hamster_insert() {
 }
 
 /* example of update callback */
-function hamster_update() {
+function first_hamster_update() {
   db_query("UPDATE {hamster} SET habitat_id = :habitat WHERE name = :name",
     array(
       ':name' => 'Test',
@@ -166,7 +166,7 @@ function hamster_update() {
 }
 
 /* example of delete callback */
-function hamster_delete() {
+function first_hamster_delete() {
   db_query("DELETE FROM {hamster} WHERE name = :name",
     array(
       ':name' => 'Test',
@@ -178,7 +178,7 @@ function hamster_delete() {
 /* declare our theme function */
 /* create hamster theme, which will allow a Themer to override our HTML */
 /* return an array with all the theme functions declared by the module */
-function hamster_theme($existing, $type, $theme, $path) {
+function first_hamster_theme($existing, $type, $theme, $path) {
   
   /* return array of function names and the variables */
   return array(
@@ -192,11 +192,11 @@ function hamster_theme($existing, $type, $theme, $path) {
  * required by declaration of hamster_theme
  * allow reuse, and override. themer can replace this function 
  */
-function theme_hamster_info($variables) {
+function first_theme_hamster_info($variables) {
   $hamster = $variables['hamster'];
   
    /* add custom CSS */
-  drupal_add_css(drupal_get_path('module', 'hamster') . '/hamster.css');
+  drupal_add_css(drupal_get_path('module', 'first_hamster') . '/first_hamster.css');
 
   $output = '<div class="hamster-page">';
   
@@ -225,19 +225,19 @@ function theme_hamster_info($variables) {
  * allows reuse of code
  * allows themer to rewrite theme_hamster_info
  */
-function hamster_page($hamster) {
- return theme('hamster_info', array('hamster' => $hamster));
+function first_hamster_page($hamster) {
+ return theme('first_hamster_info', array('hamster' => $hamster));
 }
 
 /* title callback, expects an object, just print the name for that object */
 /* NOTE: no need to re-query since load function retrieved everything */
-function hamster_page_title($hamster) {
+function first_hamster_page_title($hamster) {
   return $hamster->name;
 }
 
 /* needed for named wildcard hamster */
 /* takes hamster id, returns hamster object */
-function hamster_load($id) {
+function first_hamster_load($id) {
   
   /* note: $id takes whatever value comes as the URL */
   /* it is huge security leak to allow any SQL code to be passed in as id
@@ -257,7 +257,7 @@ function hamster_load($id) {
 /* NOTE: db_query requires {} around table names as coding standard
  * in order to allow for use of table prefixes (which is not widely used anymore)
  */
-function hamster_list() {
+function first_hamster_list() {
   $output = ' ';
   
   $items_per_page = 10;
@@ -287,7 +287,7 @@ function hamster_list() {
 
     $row = array(
       $record->id,
-      l($record->name, 'hamster/' . $record->id), /* l-function makes a link. params are label, link */
+      l($record->name, 'first_hamster/' . $record->id), /* l-function makes a link. params are label, link */
       $record->gender,
       t('@weight g', array('@weight' => $record->weight)), /* use translate with a label */
       format_date($record->birthdate, 'custom', 'Y-m-d'),  /* see PHP date. we removed hours/min/sec */
@@ -323,7 +323,7 @@ function hamster_list() {
 /* object-oriented version of hamster_list
  * optional gender filter
  */
-function hamster_oo_list($gender = NULL) {
+function first_hamster_oo_list($gender = NULL) {
   $output = '';
 
   /* 
@@ -362,7 +362,7 @@ function hamster_oo_list($gender = NULL) {
 
     $row = array(
       $record->id,
-      l($record->name, 'hamster/' . $record->id), /* l-function makes a link. params are label, link */
+      l($record->name, 'first_hamster/' . $record->id), /* l-function makes a link. params are label, link */
       $record->gender,
       t('@weight g', array('@weight' => $record->weight)), /* use translate with a label */
       format_date($record->birthdate, 'custom', 'Y-m-d'),  /* see PHP date. we removed hours/min/sec */
@@ -398,7 +398,7 @@ function hamster_oo_list($gender = NULL) {
 
 /* oo insert
  */
-function hamster_oo_insert() {
+function first_hamster_oo_insert() {
 
   db_insert('hamster')->fields(array(
       'name' => 'Test',
@@ -414,7 +414,7 @@ function hamster_oo_insert() {
 }
 
 /* example of update callback */
-function hamster_oo_update() {
+function first_hamster_oo_update() {
   
   db_update('hamster')->fields(array(
       'habitat_id' => 1,
@@ -427,7 +427,7 @@ function hamster_oo_update() {
 }
 
 /* example of delete callback */
-function hamster_oo_delete() {
+function first_hamster_oo_delete() {
   
   db_delete('hamster')
     ->condition('name', 'Test')
@@ -436,7 +436,7 @@ function hamster_oo_delete() {
   return t('Deleted');
 }
 
-function hamster_permission() {
+function first_hamster_permission() {
   return array(
     'view hamster' => array(
       'title' => t('View Hamsters'),

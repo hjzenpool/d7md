@@ -1,4 +1,4 @@
-name = Hamster DB
+name = First Hamster DB
 core = 7.x
 description = Example of using databases.
 package = DrupalTutor
