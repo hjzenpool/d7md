@@ -1,12 +1,18 @@
 <?php
 
+/* these are the hook implementations */
+
+/* uses managed files for images, so hamster.image is now an integer ID
+ * from file_manage table
+ */
+
 /**
  * Implementation of hook_menu().
  */
 function hamster_menu() {
   $items = array();
   
-  /* callaack for hamster list */
+  /* callaack for hamster list page */
   $items['hamster'] = array(
     'title' => 'Hamsters',
     'page callback' => 'hamster_list',
@@ -14,6 +20,7 @@ function hamster_menu() {
     'file' => 'hamster.pages.inc',
   );
   
+  /* View page to look at hamster/ID */
   $items['hamster/%hamster'] = array(
     'title callback' => 'hamster_page_title',
     'title arguments' => array(1),
@@ -23,6 +30,7 @@ function hamster_menu() {
     'file' => 'hamster.pages.inc',
   );
   
+  /* NOTE: calls hamster_edit_form without second arg, since there is no hamster to edit */
   $items['hamster/add'] = array(
     'title' => 'Add Hamster',
     'page callback' => 'drupal_get_form',
@@ -32,25 +40,28 @@ function hamster_menu() {
     'type' => MENU_LOCAL_ACTION,
   );
   
+  /* Edit tab */
   $items['hamster/%hamster/edit'] = array(
     'title' => 'Edit',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('hamster_edit_form', 1),
+    'page callback' => 'drupal_get_form',  /* passes the form name to drupal_get_form */
+    'page arguments' => array('hamster_edit_form', 1),  /* second arg is the hamster name */
     'access arguments' => array('edit hamsters'),
     'file' => 'hamster.pages.inc',
     'type' => MENU_LOCAL_TASK,
   );
   
+  /* View tab is default  */
   $items['hamster/%hamster/view'] = array(
     'title' => 'View',
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => -1,
   );
   
+  /* Delete tab */
   $items['hamster/%hamster/delete'] = array(
     'title' => 'Delete',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('hamster_delete_form', 1),
+    'page arguments' => array('hamster_delete_form', 1),  /* second arg is the hamster name */
     'access arguments' => array('edit hamsters'),
     'file' => 'hamster.pages.inc',
     'type' => MENU_LOCAL_TASK,
@@ -59,6 +70,7 @@ function hamster_menu() {
   
   
   /*
+   * NOTE: Moved this to first_hamster.module
    * These menu items below are all for database demos. Not part of 
    * hamster application. Commenting them out so they don't run.
    */
@@ -132,6 +144,8 @@ function hamster_menu() {
 
 /**
  * Implementation of hook_theme().
+ * allows theme_hamster_image to be the theme
+ * theme that allows image to render as large
  */
 function hamster_theme($existing, $type, $theme, $path) {
   return array(
@@ -153,6 +167,8 @@ function theme_hamster_info($variables) {
   
   $output = '<div class="hamster-page">';
   
+  /* if there is a file id, use file_load() to load image from file_manage table */
+  /* can call image->uri because that comes from file_manage */
   if (!empty($hamster->image)) {
     $image = file_load($hamster->image);
     $output .= '<div>' . theme('image_style', array('path' => $image->uri, 'style_name' => 'large')) . '</div>';
@@ -199,6 +215,7 @@ function hamster_permission() {
 
 
 /*
+ * NOTE: moved to first_hamster.module
  * These functions below are all for database demos. Not part of 
  * hamster application. Commenting them out.
  */

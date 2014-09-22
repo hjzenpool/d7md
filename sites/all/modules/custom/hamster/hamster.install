@@ -1,5 +1,8 @@
 <?php
 
+/* install file contains schema for the database */
+/* defines hamster and hamster habitat tables */
+
 function hamster_schema() {
   $schema['hamster'] = array(
     'description' => 'TODO: please describe this table!',
