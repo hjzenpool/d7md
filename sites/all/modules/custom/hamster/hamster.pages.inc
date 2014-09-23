@@ -105,15 +105,15 @@ function hamster_list() {
 function hamster_edit_form($form, &$form_state, $hamster = NULL) {
   
   $form['id'] = array(
-    '#type' => 'value',
-    '#value' => isset($hamster->id) ? $hamster->id : NULL,
+    '#type' => 'value', /* this makes it hidden */
+    '#value' => isset($hamster->id) ? $hamster->id : NULL,  /* show current id if there is one */
   );
   
   $form['name'] = array(
     '#type' => 'textfield',
     '#title' => t('Name'),
-    '#default_value' => isset($hamster->name) ? $hamster->name : NULL,
-    '#requied' => TRUE,
+    '#default_value' => isset($hamster->name) ? $hamster->name : NULL, /* current name if there is one */
+    '#required' => TRUE,
   );
   
   $form['gender'] = array(
@@ -131,20 +131,21 @@ function hamster_edit_form($form, &$form_state, $hamster = NULL) {
     '#default_value' => isset($hamster->weight) ? $hamster->weight : NULL,
   );
   
-  
+  /* built-in date, takes default value as an array */
   if (isset($hamster->birthdate)) {
     $birthdate_default = array(
-      'year' => date('Y', $hamster->birthdate),
+      'year' => date('Y', $hamster->birthdate), /* reformat the timestamp to numeric year, month, day */
       'month' => date('n', $hamster->birthdate),
       'day' => date('j', $hamster->birthdate),
     );
   }
   $form['birthdate'] = array(
-    '#type' => 'date',
+    '#type' => 'date', /* this type takes the array date */
     '#title' => t('Birth Date'),
     '#default_value' => isset($birthdate_default) ? $birthdate_default : NULL,
   );
   
+  /* use managed file for image */
   $form['image'] = array(
     '#type' => 'managed_file',
     '#title' => t('Image'),
@@ -152,9 +153,17 @@ function hamster_edit_form($form, &$form_state, $hamster = NULL) {
     '#default_value' => isset($hamster->image) ? $hamster->image : NULL,
   );
   
+  /* list of selectable habitats */
+  /* pull the list from database */
+  /* fetchAllKeyed is a method on db_query which grabs all results 
+   * '0' means first column is the id
+   */
   $habitats = db_query("SELECT id, name FROM {hamster_habitat}")->fetchAllKeyed(0);
+  
+  /* add arrays together: Select...  + the list */
   $habitats = array('' => '--Select a Habitat--') + $habitats;
   
+  /* use associative array of keys and values */
   $form['habitat_id'] = array(
     '#type' => 'select',
     '#title' => t('Habitat'),
@@ -172,22 +181,69 @@ function hamster_edit_form($form, &$form_state, $hamster = NULL) {
 
 /**
  * Submit handler for hamster add/edit form.
+ * slightly different if add, vs. edit
  */
 function hamster_edit_form_submit($form, &$form_state) {
+  
+  /* load form_state values into variable hamster */
+  /* NOTE that it is close to matching a hamster object in the database
+   * because field names were chosen to match the database table
+   */
   $hamster = $form_state['values'];
+  
+  /* strtotime converts date structure back to Unix timestamp */
   $hamster['birthdate'] = strtotime($hamster['birthdate']['year'] . '-' 
                                     . $hamster['birthdate']['month'] . '-' 
                                     . $hamster['birthdate']['day']);
   
   if (!empty($hamster['id'])) {
+    /* existing hamster will have an id (when edit) */
+    
+    /* update the database */
+    /* NOTE: drupal_write_record will ignore any extra fields that are not in the database */
     drupal_write_record('hamster', $hamster, array('id'));
+
+    /* print message */
     drupal_set_message(t('Hamster %name updated.', array('%name' => $hamster['name'])));
   }
   else {
+    /* newly added hamster will not have an id */
+
+    /* update database without an id, it will create a new one */
+    /* NOTE: drupal_write_record will also set the id into the $hamster variable */
     drupal_write_record('hamster', $hamster);
     drupal_set_message(t('Hamster %name created.', array('%name' => $hamster['name'])));
   }
   
+  if (!empty($hamster['image'])) {
+    $file = file_load($form_state['values']['image']);
+    $file->status = FILE_STATUS_PERMANENT;
+    file_save($file); /* save the image file */
+    
+    /* don't want to duplicate the entry */
+    $file_usage = file_usage_list($file); /* returns array of module-type-id */
+    /* only add if the image is empty */
+    if (empty($file_usage['hamster']['hamster'][$hamster['id']])) {
+      file_usage_add($file, 'hamster', $hamster['id']);
+    }
+  }
+  else {
+    /* was there a file associated with this hamster before? */
+    /* query file_usage to see if there used to be a file attached to that id */
+    $fid = db_query("SELECT fid FROM {file_usage} WHERE module = :module AND type = :type AND id = :id",
+    array(':module' => 'hamster', ':type' => 'hamster', ':id' => $hamster['id']))->fetchField();
+    
+    if (!empty($fid)) {
+      /* clean up file */
+      $file = file_load($fid);
+      file_usage_delete($file, 'hamster');
+      file_delete($file); /* cool thing: this will make sure file is not deleted unless everyone is done using
+       * based on file usage */
+    }
+  }
+  
+  /* tell drupal where to go at end of submit */
+  /* we want to go back to the hamster's page for that id */
   $form_state['redirect'] = 'hamster/' . $hamster['id'];
 }
 
@@ -196,21 +252,45 @@ function hamster_edit_form_submit($form, &$form_state) {
  */
 function hamster_delete_form($form, &$form_state, $hamster) {
   $form['id'] = array(
-    '#type' => 'value',
-    '#value' => $hamster->id,
+    '#type' => 'value', /* hidden value */
+    '#value' => $hamster->id, /* needed to delete the id from database  */
   );
   $form['name'] = array(
-    '#type' => 'value',
-    '#value' => $hamster->name,
+    '#type' => 'value', /* hidden value */
+    '#value' => $hamster->name, /* needed to print confirmation */
   );
-  return confirm_form($form, t('Are you sure you want to delete hamster %name?', array('%name' => $hamster->name)), 'hamster/' . $hamster->id);
+  
+  /* NOTE: third parameter "hamster/" indicates where to go if you cancel (back to the list)
+   */
+  return confirm_form($form, t('Are you sure you want to delete hamster %name?', 
+    array('%name' => $hamster->name)), 'hamster/' . $hamster->id);
 }
 
 /**
  * Hamster delete submit form.
  */
 function hamster_delete_form_submit($form, &$form_state) {
+  
+  /* delete image file */
+  /* was there a file associated with this hamster before? */
+  /* query file_usage to see if there used to be a file attached to that id */
+  $fid = db_query("SELECT fid FROM {file_usage} WHERE module = :module AND type = :type AND id = :id",
+    array(':module' => 'hamster', ':type' => 'hamster', ':id' => $form_state['id']))->fetchField();
+    
+    if (!empty($fid)) {
+      /* clean up file */
+      $file = file_load($fid);
+      file_usage_delete($file, 'hamster');
+      file_delete($file); /* cool thing: this will make sure file is not deleted unless everyone is done using
+       * based on file usage */
+    }
+  
+  /* do the delete */
   db_query("DELETE FROM {hamster} WHERE id = :id", array(':id' => $form_state['values']['id']));
+ 
+  /* name is used here */
   drupal_set_message(t('Hamster %name deleted.', array('%name' => $form_state['values']['name'])));
+  
+  /* this is after submitted delete form, so go back to top level hamster */
   $form_state['redirect'] = 'hamster';
 }
