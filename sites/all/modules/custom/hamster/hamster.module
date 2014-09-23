@@ -142,6 +142,15 @@ function hamster_menu() {
   return $items;
 }
 
+/* enable drupal to integrate with our view */
+function hamster_view_api() {
+  return array(
+    'api' => 3,
+  );
+}
+
+
+
 /**
  * Implementation of hook_theme().
  * allows theme_hamster_image to be the theme
