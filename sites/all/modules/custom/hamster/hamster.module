@@ -142,8 +142,14 @@ function hamster_menu() {
   return $items;
 }
 
-/* enable drupal to integrate with our view */
-function hamster_view_api() {
+/* tell Drupal to integrate with our view */
+/* implement hook_views_api */
+/* Drupal 7 uses:
+ * Views version 3
+ * 
+ * Views will look for our implementation of views hooks in hamsters.views.inc
+ */
+function hamster_views_api() {
   return array(
     'api' => 3,
   );
