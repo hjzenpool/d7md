@@ -1,0 +1,157 @@
+<?php
+
+/* 
+ * implement examples of API Node hooks
+ */
+
+/*
+ * implements hook_node_load()
+ * 
+ * called any time loads are loaded using node_load function
+ * allows adding of additional information
+ * (does not print it, just loads it)
+ * 
+ * @param type $nodes: array of nodes and node ids
+ * @param type $types: indexed array of all the types of the nodes
+ */
+function nodehooks_node_load($nodes, $types) {
+   // add pig-latin title to all article nodes
+  if (in_array('article', $types)) {
+    foreach ($nodes as $nid => $node) {
+      /* add a new key nodehooks_title */
+      $nodes[$nid]->nodehooks_title = ucfirst(__nodehooks_translate_to_pig_latin(strtolower($node->title)));
+    }
+  }
+}
+
+/* 
+ * implementation of hook_node_view
+ * 
+ * allows to prepare content that will be displayed when viewing a node
+ * NOTE: you can also change content values or drop things by unsetting them from display
+ * 
+ * @param type $nodes
+ * @param type $view_mode (tells you if full mode, teaser mode, or other view modes)
+ * @param type $langcode (for multilingual site)
+ * 
+ */
+function nodehooks_node_view($node, $view_mode, $langcode) {
+  
+  /* check if we are on full page, and that there is a nodehooks_title (set from the node_load hook) */
+  if ($view_mode == 'full' && !empty($node->nodehooks_title)) {
+    /* add a key to the content */
+    /* which will be displayed */
+    /* #markup key specifies the actual HTML to output */
+    $node->content['nodehooks'] = array(
+      '#markup' => '<div class="nodehooks"><strong>' . t('Pig Latin Title') . ';</strong> ' . $node->nodehooks_title,
+      '#weight' => 100,  /* push it to bottom */
+    );
+  }
+}
+
+/*
+ * implementation of hook_node_validate
+ * allows you to validate the node form
+ * 
+ * @param type $nodes
+ * @param type $types
+ * @param type form_state
+ */
+function nodehooks_node_validate($node, $form, &$form_state) {
+  if (strstr(strtolower($form_state['values']['title']), 'fight club')) {
+    form_set_error('title', t("The first rule of Fight Club: Don't talk about Fight Club."));
+  }
+}
+
+/* 
+ * implementation of hook_node_submit()
+ * do something when Submit is pressed to add a new article
+ * 
+ * @param type $nodes
+ * @param type $types
+ * @param type form_state
+ */
+function nodehooks_node_submit($node, $form, &$form_state) {
+  if ($node->type == 'article') {
+    drupal_set_message(t('Your article, %title, will be reviewed by an editor soon.', 
+      array('%title' => $node->title)), 'warning');
+  }
+}
+
+/* 
+ * implementation of hook_node_presave()
+ * do something before node is saved (can happen if Submit, or if any other way being saved, such as Update
+ * @param type $nodes
+ * 
+ */
+function nodehooks_node_presave($node) {
+  // NOTE gives an error if no body
+  if (!empty($node->body[LANGUAGE_NONE][0])) {
+    $node->body[LANGUAGE_NONE][0]['value'] = str_replace('Voldemort', 'He who must not be named', $node->body[LANGUAGE_NONE][0]['value']);
+  }
+}
+
+/*
+ * implementation of hook_node_insert()
+ * 
+ * called AFTER new nodes are created 
+ * not like PRESAVE so too late to change things
+ * all you can do is log something
+ * 
+ * @param type $nodes
+ * 
+ */
+function nodehooks_node_insert($node) {
+  if ($node->type == 'article') {
+    
+    /* watchdog logs to Drupal Log system
+     * params are: type, message, optional array of variable replacements for string
+     */
+    watchdog('nodehooks', 'Article %title created by !user.',
+      array('%title' => $node->title, '!user' => l($node->name, 'user/' . $node->uid)));
+  }
+}
+
+/*
+ * 
+ */
+function nodehooks_node_update($node) {
+  if ($node->type == 'article') {
+    
+    /* watchdog logs to Drupal Log system
+     * params are: type, message, optional array of variable replacements for string
+     */
+    watchdog('nodehooks', 'Article %title updated by !user.',
+      array('%title' => $node->title, '!user' => l($node->name, 'user/' . $node->uid)));
+  }
+}
+
+/*
+ * Delete:
+ * does not stop the delete, but allows you do to some related cleanup
+ * 
+ */
+function nodehooks_node_delete($node) {
+  if ($node->type == 'article') {
+    drupal_set_message(t('Outch: That hurts.'), 'warning');
+    }
+ }
+  
+  
+/* 
+ * custom function to translate strings to Pig Latin
+ */
+function __nodehooks_translate_to_pig_latin($string) {
+  $words = explode(' ', $string);
+  $pig_latin = array();
+  foreach ($words as $word) {
+    if (in_array(strtolower(substr($word,0,1)), array('a', 'e', 'i', 'o', 'y'))) {
+      $pig_latin[] = $word . 'way';
+    }
+    else {
+      $pig_latin[] = substr($word, 1) . substr($word,0,1) . 'ay';
+      }
+  }
+  //dpm($pig_latin);
+  return implode(' ', $pig_latin); 
+}
