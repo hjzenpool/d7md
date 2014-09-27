@@ -1,0 +1,131 @@
+<?php
+
+/* 
+ * implement examples of User hooks
+ */
+
+/*
+ * implements hook_user_load()
+ * equivalent to hook_node_load
+ * add additional keys when users are loaded
+ * 
+ * @param type $users: arary of users
+ */
+function userhooks_node_load($users) {
+
+    foreach ($users as $uid => $user) {
+      /* add a new key nodehooks_title */
+      $users[$uid]->userhooks_name = __userhooks_translate_to_pig_latin(strtolower($user->name)));
+    }
+  dpm($users);
+}
+
+/* 
+ * implementation of hook_user_view
+ * like node_user_view
+ * 
+ * @param type $account
+ * @param type $view_mode (tells you if full mode, teaser mode, or other view modes)
+ * @param type $langcode (for multilingual site)
+ * 
+ */
+function userhooks_user_view($account, $view_mode, $langcode) {
+  
+  /* check if we are on full page, and that there is a nodehooks_title (set from the node_load hook) */
+  if ($view_mode == 'full' && !empty($account->userhooks_namee)) {
+    /* add a key to the content */
+    /* which will be displayed */
+    /* #markup key specifies the actual HTML to output */
+    $account->content['userhooks'] = array(
+      '#markup' => '<dl><dt>' . t('Pig Latin Title') . '</dt>,<dd>' . $account->userhooks_name . '</dd></dl>',
+      '#weight' => 100,  /* push it to bottom */
+    );
+  }
+}
+
+/* 
+ * implementation of hook_user_presave()
+ * similar to hook_node_presave
+ * do something before user is saved (for new or updated)
+ * @param type $edit: array of keys of new values: name, mail, ...
+ * @param type $account: old values
+ * @param type $category
+ * 
+ */
+function userhooks_user_presave($edit, $account, $category) {
+  watchdog('userhooks', "I'm about to save @user.", array('@user' => $account->name));
+}
+
+/*
+ * implementation of hook_user_insert()
+ * 
+ * called AFTER new users are created 
+ * not like PRESAVE so too late to change things
+ * all you can do is log something
+ * 
+ * @param type $edit
+ * @param type $account
+ * @param type $category
+ * 
+ */
+function nodehooks_user_insert($edit, $account, $category) {
+  watchdog('userhooks', '@logged_in_user created user @user.',
+      array('@logged_in_user' => $GLOBALS['user']->name, '@user' => $account->name));
+}
+
+/*
+ * implementation of hook_user_update()
+ * 
+ * @param type $edit
+ * @param type $account
+ * @param type $category
+ */
+function nodehooks_user_update($edit, $account, $category) {
+    /* watchdog logs to Drupal Log system
+     * params are: type, message, optional array of variable replacements for string
+     */
+    watchdog('userhooks', '@logged_in_user updated user @user.',
+      array('@logged_in_user' => $GLOBALS['user']->name, '@user' => $account->name));
+}
+
+/*
+ * Delete:
+ * does not stop the delete, but allows you do to some related cleanup
+ * 
+ */
+function nodehooks_user_delete($node) {
+  drupal_set_message(t("Oh! I'm melting."), 'warning');
+ }
+  
+/* runs after user logs in */
+function userhooks_user_login(&$edit, $account) {
+  drupal_set_message(t("Howdy, @user!", array('@user' => $account->name)));  
+} 
+
+/* called as they are about to logout (before logout is complete)
+ * 
+ */
+function userhooks_user_logout($account) {
+  if ($account->name == 'dave') {
+    drupal_set_message(t("I'm sorry Dave. I'm afraid I can't let you do that."), 'error');  
+    drupal_goto('<front>'); /* sends him to the home page */
+  }
+}
+
+/* 
+ * custom function to translate strings to Pig Latin
+ */
+function __userhooks_translate_to_pig_latin($string) {
+  $words = explode(' ', $string);
+  $pig_latin = array();
+  foreach ($words as $word) {
+    if (in_array(strtolower(substr($word,0,1)), array('a', 'e', 'i', 'o', 'y'))) {
+      $pig_latin[] = $word . 'way';
+    }
+    else {
+      $pig_latin[] = substr($word, 1) . substr($word,0,1) . 'ay';
+      }
+  }
+  //dpm($pig_latin);
+  return implode(' ', $pig_latin); 
+}
