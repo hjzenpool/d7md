@@ -4,4 +4,5 @@ core = 7.x
 version = 7.x-0.1
 package = DrupalTutor
 
+dependencies[] = views
 files[] = includes/hamster_views_handler_field_image.inc

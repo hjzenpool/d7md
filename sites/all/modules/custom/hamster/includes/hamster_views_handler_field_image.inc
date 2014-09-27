@@ -5,7 +5,7 @@
 /* definition of hamster_views_handler_field_image */
 /* note, this name must match the field handler name
  * and the filename .inc
- * 
+ *  
  * extends will bring in all the code and only customize those mentioned below
  */
 class hamster_views_handler_field_image extends views_handler_field {
