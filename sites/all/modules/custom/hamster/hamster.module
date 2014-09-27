@@ -13,12 +13,16 @@ function hamster_menu() {
   $items = array();
   
   /* callaack for hamster list page */
+  
+  /* NOTE: commenting this out after implementing this as view 
   $items['hamster'] = array(
     'title' => 'Hamsters',
     'page callback' => 'hamster_list',
     'access arguments' => array('view hamster'),
     'file' => 'hamster.pages.inc',
   );
+   * 
+   */
   
   /* View page to look at hamster/ID */
   $items['hamster/%hamster'] = array(

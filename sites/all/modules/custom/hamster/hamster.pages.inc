@@ -20,6 +20,9 @@ function hamster_page_title($hamster) {
 /**
  * Page callback that lists all hamsters in the database.
  */
+/*
+ * commented out after implementing the views 
+
 function hamster_list() {
   $output = '';
   
@@ -30,7 +33,7 @@ function hamster_list() {
   $results = db_query_range("SELECT h.*, hh.name AS habitat_name FROM {hamster} h
                        LEFT JOIN {hamster_habitat} hh ON h.habitat_id = hh.id", $page * $items_per_page, $items_per_page);
   
-  /* use file_load to load managed file */
+  // use file_load to load managed file 
   $rows = array();
   foreach ($results as $record) {
     $image = file_load($record->image);
@@ -41,12 +44,12 @@ function hamster_list() {
       $image_thumbnail = '';
     }
     
-    /* create destination for edit, delete forms */
+    // create destination for edit, delete forms 
     $link_query = array('destination' => 'hamster');
     if (!empty($_GET['page'])) {
-      /* this lets destination take you back to the same page in the list */
-      /* _$GET takes any paramters from the URL */
-      /* so we can get the page from the URL and use it in destination */
+      // this lets destination take you back to the same page in the list 
+      // _$GET takes any paramters from the URL 
+      // so we can get the page from the URL and use it in destination 
       $link_query['destination'] .= '?page=' . $_GET['page'];
     }
     $row = array(
@@ -57,16 +60,18 @@ function hamster_list() {
       format_date($record->birthdate, 'custom', 'Y-m-d'),
       $image_thumbnail,
       $record->habitat_name,
-      /* View, Edit, Delete links */
-      /* use L-function */
-      /* link to hamster's record id */
-      /* 
-       * third param to L-function is options array, 
-       * query key composes the variables in the URL after the '?'
-       * ...?destination=hamster
-       * in a form, if destination is in URL, it tells Drupal where to go after form is saved
-       * link_query is array created above
-      */
+
+ 
+      // View, Edit, Delete links 
+      // use L-function 
+      // link to hamster's record id 
+       
+      // third param to L-function is options array, 
+      // query key composes the variables in the URL after the '?'
+      // ...?destination=hamster
+      // in a form, if destination is in URL, it tells Drupal where to go after form is saved
+      // link_query is array created above
+      
       l('View', 'hamster/' . $record->id) . ' - ' .
       l('Edit', 'hamster/' . $record->id . '/edit', array('query' => $link_query)) . ' - ' .
       l('Delete', 'hamster/' . $record->id . '/delete', array('query' => $link_query)),
@@ -96,6 +101,8 @@ function hamster_list() {
   
   return $output;
 }
+ * 
+ */
 
 /*
  * Hamster add/edit form.
