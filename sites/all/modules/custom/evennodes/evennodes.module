@@ -1,0 +1,9 @@
+<?php
+
+/* implement views_hook_api */
+/* tell views we are going to integrate with it */
+function evennodes_views_api() {
+  return array(
+    'api' => 3,
+  );
+}

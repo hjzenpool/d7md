@@ -1,0 +1,5 @@
+name = Even Nodes
+core = 7.x
+description = Example of Altering queries with Views Hooks: Only show even NIDs
+package = DrupalTutor
+version = 7.x-0.1
