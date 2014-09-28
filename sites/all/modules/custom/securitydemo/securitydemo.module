@@ -1,0 +1,75 @@
+<?php
+
+/* examples of good/bad practices */
+
+function securitydemo_menu() {
+  $items = array();
+  
+  /* creates path, with a node id. */
+  $items['insecure-node/%node'] = array(
+    'title callback' => 'securitydemo_node_title',
+    'title arguments' => array(1),
+    'page callback' => 'securitydemo_node_body',
+    'page arguments' => array(1),
+    'access arguments' => array('access content'),
+  );
+  
+  return $items;
+}
+
+function securitydemo_node_title($node) {
+  // NOTE: this is already escaped by the NODE system, so does not need check_plain()
+  return $node->title;
+}
+
+/* BAD to use 'value'
+ * This allows someone to enter JAVASCRIPT into the BODY FIELD:
+ * <script>alert('some text or command')</script>
+ * 
+ * because we access value directly without checking for bad code, and display it to screen
+ * 
+ * NOTE that there is always a safe_value which has applied the filters
+ * any where data is entered, it needs to be sanitized
+ */
+function securitydemo_node_body($node) {
+  
+  // NOTE: if you use title down here, it also needs to be escaped using check_plain()
+  
+  // you could use t() function with @ or % to sanitize the values
+  
+  // return $node->body[LANGUAGE_NONE][0]['value']; /* BAD: returns unsanitized user-entered data */
+  
+  $body = $node->body[LANGUAGE_NONE][0]['safe_value'];  /* GOOD: uses safe_value which has been sanitized */
+
+  $revision_log = $node->log;
+  
+  // BAD:
+  // this is also bad because revision log is text that was allowed to be freely entered by user
+  // return $body . '<div>Revision Log: ' . $revision_log . '</div>';
+  
+  // GOOD: check_plain turns HTML to encoded 
+  return $body . '<div>Revision Log: ' . check_plain($revision_log) . '</div>';
+  
+  // OKAY: this allows somw HTML
+  // return $body . '<div>Revision Log: ' . check_markup($revision_log, 'filtered_html') . '</div>'; 
+
+  // OKAY: this only filters out Javascript tags
+  //  return $body . '<div>Revision Log: ' . filter_xss($revision_log) . '</div>';
+}
+
+/*
+ * NOTE: this is a bad security hole
+ * user can enter "DELETE FROM securitydemo; INSERT INTO securitydemo (log) VALUES ('Powned!')"
+ */
+function securitydemo_node_presave($node) {
+  
+  // BAD: there is no sanitizing of user value
+  // db_query("INSERT INTO (securitydemo) (log) VALUES ('Node Saved: " . $node->title . "')");
+
+  // GOOD: safe way to use db_query is with a NAMED VARIABLE
+  // and t() function with @ to sanitize the value
+
+  // it is even fine without t() function because variable replacement does sanitizing
+  db_query("INSERT INTO (securitydemo) (log) VALUES (:message)", 
+    array(':message' => t('Node saved: @title', array('@title' => $node->title))));
+}

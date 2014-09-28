@@ -1,0 +1,5 @@
+name = User Hook Examples
+core = 7.x
+description = Examples of implementing user hooks
+package = DrupalTutor
+version = 7.x-0.1

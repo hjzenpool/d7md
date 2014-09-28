@@ -1,0 +1,27 @@
+<?php
+
+/* install file contains schema for the database */
+/* defines hamster and hamster habitat tables */
+
+function securitydemo_schema() {
+  $schema['securitydemo'] = array(
+    'description' => 'TODO: please describe this table!',
+   'fields' => array(
+    'id' => array(
+      'description' => 'TODO: please describe this field!',
+      'type' => 'serial',
+      'not null' => TRUE,
+    ),
+    'log' => array(
+      'description' => 'TODO: please describe this field!',
+      'type' => 'varchar',
+      'length' => '255',
+      'not null' => TRUE,
+    ),
+  ),
+  'primary key' => array('id'),
+  );
+
+  return $schema;
+}
+

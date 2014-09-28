@@ -42,8 +42,10 @@ function nodehooks_node_view($node, $view_mode, $langcode) {
     /* add a key to the content */
     /* which will be displayed */
     /* #markup key specifies the actual HTML to output */
+    
+    // NOTE: need to sanitize the title that was entered by the user
     $node->content['nodehooks'] = array(
-      '#markup' => '<div class="nodehooks"><strong>' . t('Pig Latin Title') . ';</strong> ' . $node->nodehooks_title,
+      '#markup' => '<div class="nodehooks"><strong>' . t('Pig Latin Title') . ';</strong> ' . check_plain($node->nodehooks_title),
       '#weight' => 100,  /* push it to bottom */
     );
   }
