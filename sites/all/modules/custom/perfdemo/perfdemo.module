@@ -1,0 +1,99 @@
+<?php
+
+/* 
+ * performance
+ */
+function perfdemo_menu() {
+  $items = array();
+  
+  $items['perfdemo'] = array(
+    'title' => 'Performance Demo',
+    'page callback' => 'perfdemo_page',
+    'access arguments' => array('access content'),
+  );
+  
+  return $items;
+}
+
+function perfdemo_page() {
+  $start = microtime(TRUE); // current time to microseconds
+  $count = 0;
+  
+  // load all hamsters 5 times
+  for ($i=0; $i<5; $i++) {
+    $count += count(perfdemo_load_all_hamsters());
+  }
+  
+  return t('Loaded @count hamsters in @time seconds.', array('@count' => $count, '@time' => microtime(TRUE) - $start));
+}
+
+/* load all hamsters and return them */
+/* ORIGINAL WAY *
+function perfdemo_load_all_hamsters() {
+  $hamsters = array();
+  
+  $ids = db_query("SELECT id from {hamster}")->fetchCol();
+  foreach ($ids as $id) {
+    $hamsters[] = perfdemo_hamster_load($id);
+  }
+  
+  return $hamsters;
+}
+*/
+
+/* same as above, with wraparound check to see if this is already in cache */
+/* by convention, unique key for cache_get/set is "module:table:field" */
+/* NOTE: this reduces time from 2 seconds to .0002 sec */
+
+/* NOTE: cache_get returns an object with other information.
+ * the original data from the set is inside of ->data
+ */
+
+/* NOTE: this requires that we should add this to SUBMIT handler
+ * in order to clear cache any time that data is UPDATED:
+ * cache_clear_all('perfdemo:hamsters:list','cache');
+ */
+function perfdemo_load_all_hamsters() {
+  
+  $hamster_list_cache = cache_get('perfdemo:hamsters:list');
+  if (!empty($hamster_list_cache)) {
+    /* already cached, so return from cache */
+    $hamsters = $hamster_list_cache->data;
+  }
+  else {
+    /* if cache not already set, go fetch the data */
+    $hamsters = array();
+    $ids = db_query("SELECT id from {hamster}")->fetchCol();
+    foreach ($ids as $id) {
+      $hamsters[] = perfdemo_hamster_load($id);
+    }
+    /* add to the cache using our unique key */
+    cache_set('perfdemo:hamsters:list', $hamsters);
+  }
+  
+  return $hamsters;
+}
+
+/* hamster load function that has been designed to be slow */
+/* adds an artificial delay */
+/* using static variable decreased this from 11 seconds to 2 seconds */
+function perfdemo_hamster_load($id) {
+  /* static variable persists between calls */
+  /* '&' indicates create a reference link to the 1 copy of the variable */
+  /* __FUNCTION__ is the string for 1 static variable */
+  /* each string needs to be unique if using multiple static variables */
+  /* first time, there will be nothing there initially */
+  $hamsters = &drupal_static(__FUNCTION__);
+  
+  /* check to see if this hamster id was already set */
+  if (!isset($hamsters[$id])) {
+    // sleep for 0.1 seconds = 100,000 microseconds
+    usleep(100000);
+  
+    $hamsters[$id] = db_query("SELECT h.*, hh.name AS habitat_name FROM {hamster} h
+                      LEFT JOIN {hamster_habitat} hh ON h.habitat_id = hh.id
+                      WHERE h.id = :hamster_id", array(':hamster_id' => $id))->fetchObject();
+    }
+
+    return $hamsters[$id];
+}
