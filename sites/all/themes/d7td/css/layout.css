@@ -1,0 +1,11 @@
+/* contains CSS for structure */
+
+#header div.section,
+#navigation div.section,
+#breadcrumb,
+#main,
+#footer div.section {
+    width: 960px;
+    margin-left: auto;
+    margin-right: auto;
+}
