@@ -27,3 +27,13 @@ a {
 body {
   background-image: url(../images/bg-texture.png);
 }
+#postscript {
+  background: #4B4233;
+  color: #fff;
+}
+#postscript a {
+  color: #fff;
+}
+#postscript table tr {
+  background: transparent;
+}

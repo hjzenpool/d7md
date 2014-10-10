@@ -163,8 +163,9 @@
     </div></div> <!-- /#main, /#main-wrapper -->
 
       <!-- NOTE: new region that we added -->
+      <!-- NOTE: built-in class clearfix handles that entire block -->
       <?php if ($page['postscript']): ?>
-        <div id="postscript"><div class="section">
+        <div id="postscript"><div class="section clearfix">
           <?php print render($page['postscript']); ?>
         </div></div> <!-- /.section, /#postscript -->
       <?php endif; ?>
