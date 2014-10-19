@@ -54,6 +54,7 @@
   
   <!-- NOTE: added here to call function in Javascript file fool.min.js -->
   <!-- but not used because instead we created a custom .js file -->
+<!--
   <script type="text/javascript">
     jQuery(document).ready(function() {  // when the document is ready
       jQuery.fool('wonky'); 
