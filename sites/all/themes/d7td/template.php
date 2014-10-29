@@ -14,7 +14,7 @@ function d7td_node_recent_content($variables) {
   $output = '<div class="node-title">';
   $output .= l($node->title, 'node/' . $node->nid);
   $output .= theme('mark', array('type' => node_mark($node->nid, $node->changed)));
-  $output .= '<div><dif class="node-author">';
+  $output .= '<div><div class="node-author">';
   
   // original way:
   //$output .= theme('username', array('account' => user_load($node->uid)));
@@ -69,6 +69,8 @@ function d7td_mark($variables) {
  * @see template_preprocess_username()
  * @see template_process_username()
  */
+
+
 /*
 function d7dt_username($variables) {
   if (isset($variables['link_path'])) {
@@ -106,6 +108,8 @@ function d7td_preprocess_username(&$variables) {
 // this gets called AFTER all preprocessing 
 function d7td_process_username(&$variables) {
   $variables['extra'] = str_replace('@', '@NOSPAM.', $variables['extra']);
+  
+  dpm($variables);
 }
 
 /* copied from template_preprocess_node */
@@ -116,7 +120,7 @@ function d7td_preprocess_node(&$variables) {
 
  // Display post information only on certain node types.
   if (variable_get('node_submitted_' . $node->type, TRUE)) {
-    $variables['submitted'] = t('Posted by !username on !datetime', array('!username' => $variables['name'], '!datetime' => $variables['date']));
+    $variables['submitted'] = t('Posted by !username on !datetime', array('!username' => theme('username', array('account' => user_load($node->uid))), '!datetime' => $variables['date']));
   } 
 }
 
